@@ -49,7 +49,14 @@ namespace DDoorDebug
         public static FieldRef<CameraRotationControl, float> angle = FieldRefAccess<CameraRotationControl, float>("angle");
         public static FieldRef<FovZoom, float> currentBaseFov = FieldRefAccess<FovZoom, float>("currentBaseFov");
         public static FieldRef<PlayerGlobal, PlayerInputControl> input = FieldRefAccess<PlayerGlobal, PlayerInputControl>("input");
-        
+
+        //wijo's stuff
+        public static bool NoClip = false;
+        public static float oldSlowDown = 0;
+        public static float oldAcc = 1;
+        public static float oldSpeed = 0;
+        public static PlayerMovementControl movementControl;
+
         private void Awake()
         {
             instance = this;
@@ -854,6 +861,52 @@ namespace DDoorDebug
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) - 2f);
             if ((Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) && !Options.freeCamEnabled && FovZoom.instance)
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) + 2f);
+
+            movementControl = FindObjectOfType<PlayerMovementControl>();
+            if (Input.GetKeyUp(KeyCode.U))
+            {
+                if (NoClip)
+                {
+                    movementControl.SetGravity(2);
+                    foreach (SphereCollider i in FindObjectOfType<PlayerGlobal>().GetComponents<SphereCollider>())
+                    {
+                        i.enabled = true;
+                    }
+                    movementControl.slowDownMultiplier = oldSlowDown;
+                    movementControl.acceleration = oldAcc;
+                    movementControl.maxSpeed = oldSpeed;
+
+                    NoClip = false;
+                }
+                else
+                {
+                    movementControl.SetGravity(0);
+                    foreach (SphereCollider i in FindObjectOfType<PlayerGlobal>().GetComponents<SphereCollider>())
+                    {
+                        i.enabled = false;
+                    }
+                    oldSlowDown = movementControl.slowDownMultiplier;
+                    oldAcc = movementControl.acceleration;
+                    oldSpeed = movementControl.maxSpeed;
+                    movementControl.acceleration = 100;
+                    movementControl.maxSpeed = 30;
+
+                    NoClip = true;
+                }
+
+            }
+            if (Input.GetKeyUp(KeyCode.H))
+            {
+                FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.up * 5;
+            }
+            if (Input.GetKeyUp(KeyCode.J))
+            {
+                FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.down * 5;
+            }
+
+            if (Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 1; }
+            if (!Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 0; }
+
         }
 
         private LineRenderer SpawnLineRenderer()
