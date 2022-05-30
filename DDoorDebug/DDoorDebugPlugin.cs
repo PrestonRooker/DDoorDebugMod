@@ -58,6 +58,7 @@ namespace DDoorDebug
         public static float oldSpeed = 0;
         public static PlayerMovementControl movementControl;
         public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
+        public static float timescale = 1f;
 
         private void Awake()
         {
@@ -801,11 +802,24 @@ namespace DDoorDebug
                 Toggle(ref Options.velGraphEnabled);
 
             if (Input.GetKeyUp(KeyCode.Insert))
-                Time.timeScale = Mathf.Clamp01(Time.timeScale - 0.1f);
+            {
+                timescale = Mathf.Clamp01(timescale - 0.25f);
+                Time.timeScale = timescale;
+            }
             if (Input.GetKeyUp(KeyCode.PageUp))
-                Time.timeScale = Mathf.Clamp(Time.timeScale + 0.1f, 0f, 2f);
+            {
+                timescale = Mathf.Clamp(timescale + 0.25f, 0f, 5f);
+                Time.timeScale = timescale;
+            }
             if (Input.GetKeyUp(KeyCode.Home))
-                Time.timeScale = 1f;
+            {
+                timescale = 1f;
+                Time.timeScale = timescale;
+            }
+            if (Time.timeScale != 0f && Time.timeScale != timescale)
+            {
+                Time.timeScale = timescale;
+            }
 
             Buttons.PauseInput(Input.GetKey(KeyCode.LeftControl));
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse0) && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
