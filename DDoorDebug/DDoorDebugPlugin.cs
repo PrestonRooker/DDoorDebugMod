@@ -718,6 +718,12 @@ namespace DDoorDebug
                 Inventory.instance.AddItem("hammer", 1, false);
                 Inventory.instance.AddItem("sword_heavy", 1, false);
                 Inventory.instance.AddItem("umbrella", 1, false);
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    WeaponSwitcher.instance.UnlockBombs();
+                    WeaponSwitcher.instance.UnlockFire();
+                    WeaponSwitcher.instance.UnlockHooskhot();
+                }
             }
             if (Input.GetKeyUp(KeyCode.F8))
                 DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
