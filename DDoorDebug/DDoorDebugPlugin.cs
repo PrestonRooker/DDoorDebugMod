@@ -41,6 +41,7 @@ namespace DDoorDebug
         private float tickFrameTime;
         private string guiOutputStr = "";
         private readonly RectOffset graphOffset = new RectOffset(0, 0, 0, 0);
+        private int statIndex = 0;
 
         // Reflection access
         public static FieldRef<_ChargeWeapon, float> chargedPower = FieldRefAccess<_ChargeWeapon, float>("chargedPower");
@@ -56,6 +57,7 @@ namespace DDoorDebug
         public static float oldAcc = 1;
         public static float oldSpeed = 0;
         public static PlayerMovementControl movementControl;
+        public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
 
         private void Awake()
         {
@@ -564,6 +566,27 @@ namespace DDoorDebug
                     Options.sceneMenuEnabled = false;
                     input(PlayerGlobal.instance).PauseInput(Options.sceneMenuEnabled);
                 }
+            }
+            if (UIMenuPauseController.instance.IsPaused())
+            {
+                GUI.skin.button.fontSize = 18;
+                GUI.skin.button.fontStyle = FontStyle.Normal;
+                var box = new Rect(100f, 500f, 120f, 170f);
+                GUI.Box(box, string.Empty);
+                statIndex = GUI.SelectionGrid(new Rect(box.x + 3f, box.y + 3f, 90f, 120f), statIndex, new string[] { "Strength", "Dexterity", "Haste", "Magic" }, 1);
+                var statName = statNames[statIndex];
+                if (GUI.Button(new Rect(box.x + box.width / 2 - 28f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>+</color>") && Inventory.instance.GetItemCount(statName) < 5)
+                {
+                    Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1);
+                }
+                if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>-</color>") && Inventory.instance.GetItemCount(statName) > 0)
+                {
+                    Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1);
+                }
+                GUI.Label(new Rect(box.right - 15f, box.y + 3f, 10f, 30f), Inventory.instance.GetItemCount(statNames[0]).ToString());
+                GUI.Label(new Rect(box.right - 15f, box.y + 33f, 10f, 30f), Inventory.instance.GetItemCount(statNames[1]).ToString());
+                GUI.Label(new Rect(box.right - 15f, box.y + 66f, 10f, 30f), Inventory.instance.GetItemCount(statNames[2]).ToString());
+                GUI.Label(new Rect(box.right - 15f, box.y + 99f, 10f, 30f), Inventory.instance.GetItemCount(statNames[3]).ToString());
             }
 
             GUI.matrix = matrix;
