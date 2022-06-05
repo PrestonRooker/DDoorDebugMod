@@ -899,9 +899,9 @@ namespace DDoorDebug
             if ((Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) && !Options.freeCamEnabled && FovZoom.instance)
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) + 2f);
 
-            movementControl = FindObjectOfType<PlayerMovementControl>();
             if (Input.GetKeyUp(KeyCode.U))
             {
+                movementControl = FindObjectOfType<PlayerMovementControl>();
                 if (NoClip)
                 {
                     movementControl.SetGravity(2);
