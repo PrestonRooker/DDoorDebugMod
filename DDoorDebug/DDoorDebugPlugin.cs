@@ -22,7 +22,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.2.0";
+        const string VERSION = "0.2.1";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -510,7 +510,7 @@ namespace DDoorDebug
             tickFrameTime += Time.deltaTime;
             if (tickFrameTime < 1f) return;
             tickFrameTime = 0;
-            if (Options.autoHeal && DData.dmgObject && DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth)
+            if (Options.autoHeal && DData.dmgObject && DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
                 DData.dmgObject.HealToFull();
         }
 
