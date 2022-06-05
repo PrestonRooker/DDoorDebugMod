@@ -576,13 +576,15 @@ namespace DDoorDebug
                 GUI.Box(box, string.Empty);
                 statIndex = GUI.SelectionGrid(new Rect(box.x + 3f, box.y + 3f, 90f, 120f), statIndex, new string[] { "Strength", "Dexterity", "Haste", "Magic" }, 1);
                 var statName = statNames[statIndex];
-                if (GUI.Button(new Rect(box.x + box.width / 2 - 28f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>+</color>") && Inventory.instance.GetItemCount(statName) < 5)
+                if (GUI.Button(new Rect(box.x + box.width / 2 - 28f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>+</color>"))
                 {
-                    Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1);
+                    if (Inventory.instance.GetItemCount(statName) < 5) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1); }
+                    else { Inventory.instance.SetItemCount(statName, 0); }
                 }
-                if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>-</color>") && Inventory.instance.GetItemCount(statName) > 0)
+                if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.bottom - 3f - 35f, 25f, 30f), "<color=blue>-</color>"))
                 {
-                    Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1);
+                    if (Inventory.instance.GetItemCount(statName) > 0) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }       
+                    else { Inventory.instance.SetItemCount(statName, 5); }
                 }
                 GUI.Label(new Rect(box.right - 15f, box.y + 3f, 10f, 30f), Inventory.instance.GetItemCount(statNames[0]).ToString());
                 GUI.Label(new Rect(box.right - 15f, box.y + 33f, 10f, 30f), Inventory.instance.GetItemCount(statNames[1]).ToString());
