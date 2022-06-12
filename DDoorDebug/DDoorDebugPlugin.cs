@@ -60,6 +60,8 @@ namespace DDoorDebug
         public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
         public static float timescale = 1f;
 
+        public static bool isTurning = false;
+
         private void Awake()
         {
             instance = this;
@@ -827,17 +829,38 @@ namespace DDoorDebug
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse0) && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
                     SpawnAtCursor();
 
-            if (Input.GetKeyUp(KeyCode.Delete) && CameraRotationControl.instance)
+            if (Input.GetKey(KeyCode.Delete) && CameraRotationControl.instance)
             {
-                var currAngle = angle(CameraRotationControl.instance) + 45f;
-                currAngle = currAngle > 315 ? 315 : currAngle;
+                var currAngle = angle(CameraRotationControl.instance) + 1.5f;
+                if (currAngle > 360) {currAngle -= 360;}
+                CameraRotationControl.instance.Rotate(currAngle, 1000);
+                isTurning = true;
+            }
+            if (!Input.GetKey(KeyCode.Delete) && CameraRotationControl.instance && isTurning)
+            {
+                isTurning = false;
+                var currAngle = angle(CameraRotationControl.instance);
                 CameraRotationControl.instance.Rotate(currAngle, 3);
             }
-            if (Input.GetKeyUp(KeyCode.PageDown) && CameraRotationControl.instance)
+
+
+            if (Input.GetKey(KeyCode.PageDown) && CameraRotationControl.instance)
             {
-                var currAngle = angle(CameraRotationControl.instance) - 45f;
-                currAngle = currAngle < 0 ? 0 : currAngle;
-                CameraRotationControl.instance.Rotate(currAngle,3);
+                var currAngle = angle(CameraRotationControl.instance) - 1.5f;
+                if (currAngle < 0) {currAngle += 360;}
+                CameraRotationControl.instance.Rotate(currAngle, 1000);
+                isTurning = true;
+            }
+            if (!Input.GetKey(KeyCode.PageDown) && CameraRotationControl.instance && isTurning)
+            {
+                isTurning = false;
+                var currAngle = angle(CameraRotationControl.instance);
+                CameraRotationControl.instance.Rotate(currAngle, 3);
+            }
+
+            if (Input.GetKeyUp(KeyCode.End) && CameraRotationControl.instance && !isTurning)
+            {
+                CameraRotationControl.instance.Rotate(0, 12);
             }
             
             if (Options.freeCamEnabled && Cache.mainCam != null)
