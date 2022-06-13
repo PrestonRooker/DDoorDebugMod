@@ -59,8 +59,9 @@ namespace DDoorDebug
         public static PlayerMovementControl movementControl;
         public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
         public static float timescale = 1f;
-
         public static bool isTurning = false;
+        public static bool HasZoomed = false;
+        public static float baseZoom = 1f;
 
         private void Awake()
         {
@@ -861,6 +862,11 @@ namespace DDoorDebug
             if (Input.GetKeyUp(KeyCode.End) && CameraRotationControl.instance && !isTurning)
             {
                 CameraRotationControl.instance.Rotate(0, 12);
+                if (HasZoomed)
+                {
+                    FovZoom.instance.SetCurrentBaseZoom(baseZoom);
+                    HasZoomed = false;
+                }
             }
             
             if (Options.freeCamEnabled && Cache.mainCam != null)
@@ -920,9 +926,24 @@ namespace DDoorDebug
             }
 
             if ((Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus)) && !Options.freeCamEnabled && FovZoom.instance)
+            {
+                if (!HasZoomed) 
+                { 
+                    baseZoom = currentBaseFov(FovZoom.instance);
+                    HasZoomed = true;
+                }
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) - 2f);
+            }
+
             if ((Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) && !Options.freeCamEnabled && FovZoom.instance)
+            {
+                if (!HasZoomed)
+                {
+                    baseZoom = currentBaseFov(FovZoom.instance);
+                    HasZoomed = true;
+                }
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) + 2f);
+            }
 
             if (Input.GetKeyUp(KeyCode.U))
             {
