@@ -36,21 +36,28 @@ F3 :: Scene travel
 F4 :: auto heal
 F5 :: boss reset (you still need to travel to "OldCrowVoid" scene manually for Crow)
 Shift+F5 :: resets boss intro flags as well
-F6 :: grants 20k souls and resets stats to 0
-F8 :: set teleport checkpoint in scene
+F6 :: grants 30k souls and resets stats to 0
 F7 :: get all weapons
+Shift+F7 :: get all spells
+F8 :: set teleport checkpoint in scene
 F9 :: teleport to saved cp (only within same scene)
 F10 :: toggle state of collider visibility (box->mesh->capsule->sphere > cycle back)
 Ctrl+F10 :: populate collider cache (populated with objects camera can see)
+F11 :: freecam
 Insert :: Timescale Down
 PgUp :: Timescale UP
 Home :: Timescale back to default
-F11 :: freecam
 Ctrl+Mouse1 :: teleport to mouse position on screen
-Delete :: rotate fixed camera left 45d
-PgDown :: rotate fixed camera right 45d
+Delete :: rotate fixed camera to the left
+PgDown :: rotate fixed camera to the right
+End :: reset fixed camera to original and reset zoom
+U :: toggle noclip
+H :: move up (for use in noclip)
+J :: move down (for use in noclip)
 +/- :: FOV change
-Backspace :: enable Velocity graph. Only Active when Info Pane is active
-0 :: enable line of sight
-P :: enable path history trail
+Backspace - enable Velocity graph. Only Active when Info Pane is active
+0 - enable line of sight
+P - enable path history trail
+
+Change Stat Upgrades: Hit escape to open menu, click + to add attribute, - to remove attribute
 ```
