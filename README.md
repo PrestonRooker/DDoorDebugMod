@@ -1,6 +1,6 @@
 # DDoorDebugMod
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/PrestonRooker/DDoorDebugMod)
-![GitHub issues](https://img.shields.io/github/issues/PrestonRooker/DDoorDebugMod)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/PrestonRooker/DDoorDebugMod)](https://github.com/PrestonRooker/DDoorDebugMod/releases/latest)
+[![GitHub issues](https://img.shields.io/github/issues/PrestonRooker/DDoorDebugMod)](https://github.com/PrestonRooker/DDoorDebugMod/issues)
 
 Debug mod for Death's Door designed to help find glitches and assist in speedrun practice.
 
