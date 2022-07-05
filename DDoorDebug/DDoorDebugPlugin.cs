@@ -511,7 +511,7 @@ namespace DDoorDebug
         private void TickLogic()
         {
             tickFrameTime += Time.deltaTime;
-            if (tickFrameTime < 1f) return;
+            if (tickFrameTime < 0.2f) return;
             tickFrameTime = 0;
             if (Options.autoHeal && DData.dmgObject && DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
                 DData.dmgObject.HealToFull();
@@ -730,7 +730,13 @@ namespace DDoorDebug
                 input(PlayerGlobal.instance).PauseInput(Toggle(ref Options.sceneMenuEnabled));
 
             if (Input.GetKeyUp(KeyCode.F4))
-                Toggle(ref Options.autoHeal);
+            {
+                DData.dmgObject.HealToFull();
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    Toggle(ref Options.autoHeal);
+                }
+            }
 
             if (Input.GetKeyUp(KeyCode.F5))
             {
