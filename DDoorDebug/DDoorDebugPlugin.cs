@@ -59,6 +59,7 @@ namespace DDoorDebug
         public static PlayerMovementControl movementControl;
         public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
         public static float timescale = 1f;
+        public static bool paused = false;
         public static bool isTurning = false;
         public static bool HasZoomed = false;
         public static float baseZoom = 1f;
@@ -827,8 +828,13 @@ namespace DDoorDebug
                 timescale = 1f;
                 Time.timeScale = timescale;
             }
-            if (Time.timeScale != 0f && Time.timeScale != timescale)
+            if (!paused && UIMenuPauseController.instance.IsPaused())
             {
+                paused = true;
+            }
+            if (paused && !UIMenuPauseController.instance.IsPaused())
+            {
+                paused = false;
                 Time.timeScale = timescale;
             }
 
