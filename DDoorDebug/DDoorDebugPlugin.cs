@@ -60,6 +60,7 @@ namespace DDoorDebug
         public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
         public static float timescale = 1f;
         public static bool paused = false;
+        public static bool wasSlow = false;
         public static bool isTurning = false;
         public static bool HasZoomed = false;
         public static float baseZoom = 1f;
@@ -828,6 +829,17 @@ namespace DDoorDebug
                 timescale = 1f;
                 Time.timeScale = timescale;
             }
+
+            if (!wasSlow && Time.timeScale <= 0.24f && !UIMenuPauseController.instance.IsPaused() && !GameSceneManager.instance.IsLoading())
+            {
+                wasSlow = true;
+            }
+            if (wasSlow && Time.timeScale > 0.24)
+            {
+                wasSlow = false;
+                Time.timeScale = timescale;
+            }
+
             if (!paused && UIMenuPauseController.instance.IsPaused())
             {
                 paused = true;
@@ -835,8 +847,12 @@ namespace DDoorDebug
             if (paused && !UIMenuPauseController.instance.IsPaused())
             {
                 paused = false;
-                Time.timeScale = timescale;
+                if (!wasSlow) { Time.timeScale = timescale; }
             }
+            if (!UIMenuPauseController.instance.IsPaused() && Time.timeScale != timescale && !wasSlow)
+            {
+                timescale = Time.timeScale;
+            }    
 
             Buttons.PauseInput(Input.GetKey(KeyCode.LeftControl));
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse0) && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
