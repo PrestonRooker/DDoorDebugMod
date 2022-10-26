@@ -22,7 +22,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.2.3";
+        const string VERSION = "0.2.4";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
