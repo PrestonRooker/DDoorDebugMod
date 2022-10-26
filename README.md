@@ -39,8 +39,9 @@ Shift+F5 :: resets boss intro flags as well
 F6 :: grants 30k souls and resets stats to 0
 F7 :: get all weapons
 Shift+F7 :: get all spells
-F8 :: set teleport checkpoint in scene
+F8 :: set teleport checkpoint
 F9 :: teleport to saved cp (only within same scene)
+shift+f9 :: teleport to saved cp, ignores scene
 F10 :: toggle state of collider visibility (box->mesh->capsule->sphere > cycle back)
 Ctrl+F10 :: populate collider cache (populated with objects camera can see)
 F11 :: freecam

@@ -22,7 +22,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.2.2";
+        const string VERSION = "0.2.3";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -774,7 +774,7 @@ namespace DDoorDebug
 
             if (Input.GetKeyUp(KeyCode.F9))
             {   
-                if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode())
+                if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode() || Input.GetKey(KeyCode.LeftShift))
                     PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
             }
 
