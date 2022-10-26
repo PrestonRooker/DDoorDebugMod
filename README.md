@@ -33,7 +33,8 @@ Follow these steps to update the mod if you already have a previous version inst
 F1 :: info pane
 F2 :: enemy HP overlay
 F3 :: Scene travel
-F4 :: auto heal
+F4 :: heal to full health
+Shift+F4 :: toggle auto heal
 F5 :: boss reset (you still need to travel to "OldCrowVoid" scene manually for Crow)
 Shift+F5 :: resets boss intro flags as well
 F6 :: grants 30k souls and resets stats to 0
