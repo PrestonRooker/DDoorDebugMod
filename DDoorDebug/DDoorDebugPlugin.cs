@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,7 @@ using UnityEngine;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.IO;
 using UnityEngine.Rendering;
@@ -22,7 +24,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.2.4";
+        const string VERSION = "0.2.5";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -65,8 +67,58 @@ namespace DDoorDebug
         public static bool HasZoomed = false;
         public static float baseZoom = 1f;
 
+        //bind menu
+        public static List<String>[] features = new List<string>[] // { "name in config file", "default bind" }
+        {
+            new List<string>() { "Info menu", "F1" },
+            new List<string>() { "Show hp", "F2" },
+            new List<string>() { "Warp menu", "F3" },
+            new List<string>() { "Healing", "F4" },
+            new List<string>() { "Boss reset", "F5" },
+            new List<string>() { "Reset stats and give souls", "F6" },
+            new List<string>() { "Unlock weapons", "F7" },
+            new List<string>() { "Save pos", "F8" },
+            new List<string>() { "Load pos", "F9" },
+            new List<string>() { "Show colliders", "F10" },
+            new List<string>() { "Freecam", "F11" },
+            new List<string>() { "Line in front of you", "Alpha0" },
+            new List<string>() { "Pos history", "P" },
+            new List<string>() { "Velocity graph", "Backspace" },
+            new List<string>() { "Timescale down", "Insert" },
+            new List<string>() { "Timescale up", "PageUp" },
+            new List<string>() { "Reset timescale", "Home" },
+            new List<string>() { "Rotate cam right", "Delete" },
+            new List<string>() { "Rotate cam left", "PageDown" },
+            new List<string>() { "Reset cam", "End" },
+            new List<string>() { "Mouse tele modifier", "LeftControl" },
+            new List<string>() { "Zoom in", "Minus" },
+            new List<string>() { "Zoom out", "Equals" },
+            new List<string>() { "Toggle noclip", "U" },
+            new List<string>() { "Tele up", "H" },
+            new List<string>() { "Tele down", "J" }
+        };
+        public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
+
+        internal static new ManualLogSource Log; //logging (idk if this is needed whatever I have it in other projects too c:)
+
         private void Awake()
         {
+            Log = base.Logger;
+
+            foreach(var feature in features)
+            {
+                KeyCode result;
+                var success = System.Enum.TryParse<KeyCode>(Config.Bind("Binds", feature[0], feature[1]).Value, out result);
+                if (success)
+                {
+                    featureBinds.Add(feature[0], result);
+                }
+                if (!success)
+                {
+                    featureBinds.Add(feature[0], false);
+                }
+            }
+
             instance = this;
             Options = new PluginOptions();
             DData = new DDoorDebugData();
@@ -515,8 +567,15 @@ namespace DDoorDebug
             tickFrameTime += Time.deltaTime;
             if (tickFrameTime < 0.2f) return;
             tickFrameTime = 0;
-            if (Options.autoHeal && DData.dmgObject && DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
+            if (!Options.autoHeal || !DData.dmgObject)
+            {
+                return;
+            }
+            if (DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
+            {
                 DData.dmgObject.HealToFull();
+            }
+            UIArrowChargeBar.instance.GainCharge(8);
         }
 
         private void OnGUI()
@@ -707,18 +766,28 @@ namespace DDoorDebug
                 guiOutputStr = builder.Finalize();
             }
         }
+        
+        private bool CheckIfPressed(String name)
+        {
+            return featureBinds[name].GetType() == typeof(KeyCode) && Input.GetKeyUp((KeyCode)featureBinds[name]);
+        }
+
+        private bool CheckIfHeld(String name)
+        {
+            return featureBinds[name].GetType() == typeof(KeyCode) && Input.GetKey((KeyCode)featureBinds[name]);
+        }
             
         private void ProcessInput()
         {
             if (!CanRender()) return;
 
-            if (Input.GetKeyUp(KeyCode.F1))
+            if (CheckIfPressed("Info menu"))
             {
                 Toggle(ref Options.menuEnabled);
                 DData.lastVelocity = 0;
             }
 
-            if (Input.GetKeyUp(KeyCode.F2))
+            if (CheckIfPressed("Show hp"))
             {
                 DData.damageables.Clear();
                 if (Toggle(ref Options.hpEnabled))
@@ -728,10 +797,10 @@ namespace DDoorDebug
                         AddDamageable(foundDmgbls[i]);
                 }
             }
-            if (Input.GetKeyUp(KeyCode.F3))
+            if (CheckIfPressed("Warp menu"))
                 input(PlayerGlobal.instance).PauseInput(Toggle(ref Options.sceneMenuEnabled));
 
-            if (Input.GetKeyUp(KeyCode.F4))
+            if (CheckIfPressed("Healing"))
             {
                 DData.dmgObject.HealToFull();
                 if (Input.GetKey(KeyCode.LeftShift))
@@ -740,23 +809,23 @@ namespace DDoorDebug
                 }
             }
 
-            if (Input.GetKeyUp(KeyCode.F5))
+            if (CheckIfPressed("Boss reset"))
             {
                 foreach (var boss_str in DData.bossKeys)
-                    GameSave.GetSaveData().SetKeyState(boss_str, false,false);
+                    GameSave.GetSaveData().SetKeyState(boss_str, false, false);
                 if (Input.GetKey(KeyCode.LeftShift))
                     foreach (var boss_str in DData.bossesIntroKeys)
-                        GameSave.GetSaveData().SetKeyState(boss_str, false,false);    
+                        GameSave.GetSaveData().SetKeyState(boss_str, false, false);
             }
-            if (Input.GetKeyUp(KeyCode.F6))
+            if (CheckIfPressed("Reset stats and give souls"))
             {
                 Inventory.instance.AddItem("currency", 30000, false);
                 Inventory.instance.SetItemCount("stat_melee", 0);
-	            Inventory.instance.SetItemCount("stat_dexterity", 0);
-	            Inventory.instance.SetItemCount("stat_haste", 0);
-	            Inventory.instance.SetItemCount("stat_magic", 0);
+                Inventory.instance.SetItemCount("stat_dexterity", 0);
+                Inventory.instance.SetItemCount("stat_haste", 0);
+                Inventory.instance.SetItemCount("stat_magic", 0);
             }
-            if (Input.GetKeyUp(KeyCode.F7))
+            if (CheckIfPressed("Unlock weapons"))
             {
                 Inventory.instance.AddItem("daggers", 1, false);
                 Inventory.instance.AddItem("hammer", 1, false);
@@ -769,16 +838,16 @@ namespace DDoorDebug
                     WeaponSwitcher.instance.UnlockHooskhot();
                 }
             }
-            if (Input.GetKeyUp(KeyCode.F8))
+            if (CheckIfPressed("Save pos"))
                 DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
 
-            if (Input.GetKeyUp(KeyCode.F9))
-            {   
+            if (CheckIfPressed("Load pos"))
+            {
                 if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode() || Input.GetKey(KeyCode.LeftShift))
                     PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
             }
 
-            if (Input.GetKeyUp(KeyCode.F10))
+            if (CheckIfPressed("Show colliders"))
             {
                 if (Input.GetKey(KeyCode.LeftControl))
                 {
@@ -791,13 +860,13 @@ namespace DDoorDebug
                 }
             }
 
-            if (Input.GetKeyUp(KeyCode.F11) && Cache.cineBrain != null)
+            if (CheckIfPressed("Freecam") && Cache.cineBrain != null)
             {
                 Cache.cineBrain.enabled = !Cache.cineBrain.enabled;
                 Options.freeCamEnabled = !Cache.cineBrain.enabled;
             }
-
-            if (Input.GetKeyUp(KeyCode.Alpha0))
+            
+            if (CheckIfPressed("Line in front of you"))
             {
                 if (!Cache.lineRenderer)
                     Cache.lineRenderer = SpawnLineRenderer();
@@ -805,26 +874,26 @@ namespace DDoorDebug
                     Cache.lineRenderer.enabled = !Cache.lineRenderer.enabled;
             }
 
-            if (Input.GetKeyUp(KeyCode.P))
+            if (CheckIfPressed("Pos history"))
             {
                 Toggle(ref Options.posHistGraphEnabled);
                 DData.posHistSamples.Clear();
             }
 
-            if (Input.GetKeyUp(KeyCode.Backspace))
+            if (CheckIfPressed("Velocity graph"))
                 Toggle(ref Options.velGraphEnabled);
 
-            if (Input.GetKeyUp(KeyCode.Insert))
+            if (CheckIfPressed("Timescale down"))
             {
-                timescale = Mathf.Clamp01(timescale - 0.25f);
+                timescale = Mathf.Clamp(timescale - 0.25f, 0f, 5f);
                 Time.timeScale = timescale;
             }
-            if (Input.GetKeyUp(KeyCode.PageUp))
+            if (CheckIfPressed("Timescale up"))
             {
                 timescale = Mathf.Clamp(timescale + 0.25f, 0f, 5f);
                 Time.timeScale = timescale;
             }
-            if (Input.GetKeyUp(KeyCode.Home))
+            if (CheckIfPressed("Reset timescale"))
             {
                 timescale = 1f;
                 Time.timeScale = timescale;
@@ -852,20 +921,21 @@ namespace DDoorDebug
             if (!UIMenuPauseController.instance.IsPaused() && Time.timeScale != timescale && !wasSlow)
             {
                 timescale = Time.timeScale;
-            }    
+            }        
 
-            Buttons.PauseInput(Input.GetKey(KeyCode.LeftControl));
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse0) && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
-                    SpawnAtCursor();
+           Buttons.PauseInput(CheckIfHeld("Mouse tele modifier"));
+            if (CheckIfHeld("Mouse tele modifier") && Input.GetKeyUp(KeyCode.Mouse0) && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
+                SpawnAtCursor();
 
-            if (Input.GetKey(KeyCode.Delete) && CameraRotationControl.instance)
+            if (CheckIfHeld("Rotate cam right") && CameraRotationControl.instance)
             {
                 var currAngle = angle(CameraRotationControl.instance) + 1.5f;
-                if (currAngle > 360) {currAngle -= 360;}
+                if (currAngle > 360) { currAngle -= 360; }
                 CameraRotationControl.instance.Rotate(currAngle, 1000);
                 isTurning = true;
             }
-            if (!Input.GetKey(KeyCode.Delete) && CameraRotationControl.instance && isTurning)
+            
+            if (!CheckIfHeld("Rotate cam right") && CameraRotationControl.instance && isTurning)
             {
                 isTurning = false;
                 var currAngle = angle(CameraRotationControl.instance);
@@ -873,21 +943,21 @@ namespace DDoorDebug
             }
 
 
-            if (Input.GetKey(KeyCode.PageDown) && CameraRotationControl.instance)
+            if (CheckIfHeld("Rotate cam left") && CameraRotationControl.instance)
             {
                 var currAngle = angle(CameraRotationControl.instance) - 1.5f;
-                if (currAngle < 0) {currAngle += 360;}
+                if (currAngle < 0) { currAngle += 360; }
                 CameraRotationControl.instance.Rotate(currAngle, 1000);
                 isTurning = true;
             }
-            if (!Input.GetKey(KeyCode.PageDown) && CameraRotationControl.instance && isTurning)
+            if (!CheckIfHeld("Rotate cam left") && CameraRotationControl.instance && isTurning)
             {
                 isTurning = false;
                 var currAngle = angle(CameraRotationControl.instance);
                 CameraRotationControl.instance.Rotate(currAngle, 3);
             }
 
-            if (Input.GetKeyUp(KeyCode.End) && CameraRotationControl.instance && !isTurning)
+            if (CheckIfPressed("Reset cam") && CameraRotationControl.instance && !isTurning)
             {
                 CameraRotationControl.instance.Rotate(0, 12);
                 if (HasZoomed)
@@ -896,40 +966,39 @@ namespace DDoorDebug
                     HasZoomed = false;
                 }
             }
-            
+
             if (Options.freeCamEnabled && Cache.mainCam != null)
             {
                 Options.freeLookConf.rotationX += Input.GetAxis("Mouse X") * Options.freeLookConf.cameraSensitivity * Time.deltaTime;
-			    Options.freeLookConf.rotationY += Input.GetAxis("Mouse Y") * Options.freeLookConf.cameraSensitivity * Time.deltaTime;
-			    Options.freeLookConf.rotationY = Mathf.Clamp (Options.freeLookConf.rotationY, -90, 90);
+                Options.freeLookConf.rotationY += Input.GetAxis("Mouse Y") * Options.freeLookConf.cameraSensitivity * Time.deltaTime;
+                Options.freeLookConf.rotationY = Mathf.Clamp(Options.freeLookConf.rotationY, -90, 90);
 
-			    float vAxis = 0f;
-			    float hAxis = 0f;
-			    float factor = 1;
+                float vAxis = 0f;
+                float hAxis = 0f;
+                float factor = 1;
 
-			    if (Input.GetKey(KeyCode.F))
-				    hAxis = -1f;
-			    else if (Input.GetKey(KeyCode.H))
-				    hAxis = 1f;
+                /*if (Input.GetKey(KeyCode.F))
+                    hAxis = -1f;
+                else if (Input.GetKey(KeyCode.H))
+                    hAxis = 1f;
+                if (Input.GetKey(KeyCode.T))
+                    vAxis = 1f;
+                else if (Input.GetKey(KeyCode.G))
+                    vAxis = -1f;*/
 
-			    if (Input.GetKey(KeyCode.T))
-				    vAxis = 1f;
-			    else if (Input.GetKey(KeyCode.G))
-				    vAxis = -1f;
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    factor = Options.freeLookConf.fastMoveFactor;
+                else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                    factor = Options.freeLookConf.slowMoveFactor;
 
-	 		    if (Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift))
-				    factor = Options.freeLookConf.fastMoveFactor;
-	 		    else if (Input.GetKey (KeyCode.LeftControl) || Input.GetKey (KeyCode.RightControl))
-				    factor = Options.freeLookConf.slowMoveFactor;
-
-	 		    Cache.mainCam.transform.position += Cache.mainCam.transform.forward * (Options.freeLookConf.normalMoveSpeed * factor) * vAxis * Time.deltaTime;
-			    Cache.mainCam.transform.position += Cache.mainCam.transform.right * (Options.freeLookConf.normalMoveSpeed * factor) * hAxis * Time.deltaTime;
+                Cache.mainCam.transform.position += Cache.mainCam.transform.forward * (Options.freeLookConf.normalMoveSpeed * factor) * vAxis * Time.deltaTime;
+                Cache.mainCam.transform.position += Cache.mainCam.transform.right * (Options.freeLookConf.normalMoveSpeed * factor) * hAxis * Time.deltaTime;
 
                 var currEulerAngles = Cache.mainCam.transform.localRotation;
-                if (Input.GetKey(KeyCode.Home))
+                /*if (Input.GetKey(KeyCode.Home))
                     currEulerAngles.y += 2f * Time.deltaTime;
                 if (Input.GetKey(KeyCode.End))
-                    currEulerAngles.y -= 2f * Time.deltaTime;;
+                    currEulerAngles.y -= 2f * Time.deltaTime; ;
                 if (Input.GetKey(KeyCode.Delete))
                     currEulerAngles.x -= 2f * Time.deltaTime;
                 if (Input.GetKey(KeyCode.PageDown))
@@ -937,33 +1006,33 @@ namespace DDoorDebug
                 if (Input.GetKey(KeyCode.Insert))
                     currEulerAngles.z -= 2f * Time.deltaTime;
                 if (Input.GetKey(KeyCode.PageUp))
-                    currEulerAngles.z += 2f * Time.deltaTime;
+                    currEulerAngles.z += 2f * Time.deltaTime;*/
                 if (Options.freeCamMouse)
                 {
                     Cache.mainCam.transform.localRotation = Quaternion.AngleAxis(Options.freeLookConf.rotationX, Vector3.up);
-			        Cache.mainCam.transform.localRotation *= Quaternion.AngleAxis(Options.freeLookConf.rotationY, Vector3.left);
+                    Cache.mainCam.transform.localRotation *= Quaternion.AngleAxis(Options.freeLookConf.rotationY, Vector3.left);
                 }
                 else
                 {
                     Cache.mainCam.transform.localRotation = currEulerAngles;
                 }
-                if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus)) { Cache.mainCam.fieldOfView -= 0.5f * Time.deltaTime; }
-                if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) { Cache.mainCam.fieldOfView += 0.5f * Time.deltaTime; }
-			    if (Input.GetKey(KeyCode.R)) { Cache.mainCam.transform.position += Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime; }
-			    if (Input.GetKey(KeyCode.Y)) { Cache.mainCam.transform.position -= Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime;}
+                if (CheckIfPressed("Zoom in")) { Cache.mainCam.fieldOfView -= 0.5f * Time.deltaTime; }
+                if (CheckIfPressed("Zoom out")) { Cache.mainCam.fieldOfView += 0.5f * Time.deltaTime; }
+                if (Input.GetKey(KeyCode.R)) { Cache.mainCam.transform.position += Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime; }
+                if (Input.GetKey(KeyCode.Y)) { Cache.mainCam.transform.position -= Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime; }
             }
 
-            if ((Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus)) && !Options.freeCamEnabled && FovZoom.instance)
+            if (CheckIfPressed("Zoom in") && !Options.freeCamEnabled && FovZoom.instance)
             {
-                if (!HasZoomed) 
-                { 
+                if (!HasZoomed)
+                {
                     baseZoom = currentBaseFov(FovZoom.instance);
                     HasZoomed = true;
                 }
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) - 2f);
             }
 
-            if ((Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) && !Options.freeCamEnabled && FovZoom.instance)
+            if (CheckIfPressed("Zoom out") && !Options.freeCamEnabled && FovZoom.instance)
             {
                 if (!HasZoomed)
                 {
@@ -973,7 +1042,7 @@ namespace DDoorDebug
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) + 2f);
             }
 
-            if (Input.GetKeyUp(KeyCode.U))
+            if (CheckIfPressed("Toggle noclip"))
             {
                 movementControl = FindObjectOfType<PlayerMovementControl>();
                 if (NoClip)
@@ -1006,20 +1075,20 @@ namespace DDoorDebug
                 }
 
             }
-            if (Input.GetKeyUp(KeyCode.H))
+            if (CheckIfPressed("Tele up"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.up * 5;
             }
-            if (Input.GetKeyUp(KeyCode.J))
+            if (CheckIfPressed("Tele down"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.down * 5;
             }
 
             if (Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 1; }
             if (!Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 0; }
-
         }
 
+        
         private LineRenderer SpawnLineRenderer()
         {
             var lines = PlayerGlobal.instance.transform.Find("VISUALS/crow_player (fbx)/body").gameObject.AddComponent<LineRenderer>();
