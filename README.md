@@ -30,36 +30,11 @@ Follow these steps to update the mod if you already have a previous version inst
 
 ## Usage
 ```
-F1 :: info pane
-F2 :: enemy HP overlay
-F3 :: Scene travel
-F4 :: heal to full health
-Shift+F4 :: toggle auto heal
-F5 :: boss reset (you still need to travel to "OldCrowVoid" scene manually for Crow)
-Shift+F5 :: resets boss intro flags as well
-F6 :: grants 30k souls and resets stats to 0
-F7 :: get all weapons
-Shift+F7 :: get all spells
-F8 :: set teleport checkpoint
-F9 :: teleport to saved cp (only within same scene)
-shift+f9 :: teleport to saved cp, ignores scene
-F10 :: toggle state of collider visibility (box->mesh->capsule->sphere > cycle back)
-Ctrl+F10 :: populate collider cache (populated with objects camera can see)
-F11 :: freecam
-Insert :: Timescale Down
-PgUp :: Timescale UP
-Home :: Timescale back to default
-Ctrl+Mouse1 :: teleport to mouse position on screen
-Delete :: rotate fixed camera to the left
-PgDown :: rotate fixed camera to the right
-End :: reset fixed camera to original and reset zoom
-U :: toggle noclip
-H :: move up (for use in noclip)
-J :: move down (for use in noclip)
-+/- :: FOV change
-Backspace - enable Velocity graph. Only Active when Info Pane is active
-0 - enable line of sight
-P - enable path history trail
+Tab (by default) opens a binding menu where you can see all features. How to use:
+Clicking on feature name will activate it.
+Clicking on the key name will allow you to bind the key by clicking the desired key, pressing shift + esc will make the key "None" meaning it isn't bound.
+The s, c and a are toggleable buttons that decide what modifiers, shift, ctrl and alt respectively, need to be pressed to activate set feature. Selecting multiple means pressing them all at the same time.
+If the "extra" toggleable button is pressed you can press other modifiers than the ones specified and it'll still activate and the other way around.
 
-Change Stat Upgrades: Hit escape to open menu, click + to add attribute, - to remove attribute
+Change Stat Upgrades: Open pause menu and you can see the window on the left. Click + to add attribute, - to remove attribute. They will wrap around but you can bypass this by holding shift.
 ```

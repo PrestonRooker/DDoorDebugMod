@@ -25,7 +25,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.2.8";
+        const string VERSION = "0.3";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -67,6 +67,7 @@ namespace DDoorDebug
         public static bool isTurning = false;
         public static bool HasZoomed = false;
         public static float baseZoom = 1f;
+        public static bool infMagic = false;
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -75,8 +76,10 @@ namespace DDoorDebug
             new List<string>() { "Info menu", "F1", "", "t" },
             new List<string>() { "Show hp", "F2", "", "t" },
             new List<string>() { "Warp menu", "F3", "", "t" },
-            new List<string>() { "Heal to full", "F4", "", "t" },
-            new List<string>() { "Auto heal", "F4", "s", "t" },
+            new List<string>() { "Heal to full", "F4", "", "f" },
+            new List<string>() { "Auto heal", "F4", "s", "f" },
+            new List<string>() { "Inf magic", "F4", "c", "f" },
+            new List<string>() { "Toggle godmode", "F4", "a", "f" },
             new List<string>() { "Boss reset", "F5", "", "t" },
             new List<string>() { "Boss reset with cuts", "F5", "s", "t" },
             new List<string>() { "Reset stats", "F6", "", "t" },
@@ -102,7 +105,8 @@ namespace DDoorDebug
             new List<string>() { "Zoom out", "Equals", "", "t" },
             new List<string>() { "Toggle noclip", "U", "", "t" },
             new List<string>() { "Tele up", "H", "", "t" },
-            new List<string>() { "Tele down", "J", "", "t" }
+            new List<string>() { "Tele down", "J", "", "t" },
+            new List<string>() { "Toggle night", "", "", "t" }
         };
         public struct Bind
         {
@@ -589,15 +593,21 @@ namespace DDoorDebug
             tickFrameTime += Time.deltaTime;
             if (tickFrameTime < 0.2f) return;
             tickFrameTime = 0;
-            if (!Options.autoHeal || !DData.dmgObject)
+            if (Options.autoHeal)
             {
-                return;
+                if (!DData.dmgObject)
+                {
+                    return;
+                }
+                if (DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
+                {
+                    DData.dmgObject.HealToFull();
+                }
             }
-            if (DData.dmgObject.GetCurrentHealth() < DData.dmgObject.maxHealth && DData.dmgObject.GetCurrentHealth() > 0)
+            if (infMagic)
             {
-                DData.dmgObject.HealToFull();
+                UIArrowChargeBar.instance.GainCharge(8);
             }
-            UIArrowChargeBar.instance.GainCharge(8);
         }
 
         private void listenForKeys()
@@ -721,8 +731,15 @@ namespace DDoorDebug
                     {
                         listeningForKey = feature[0];
                     }
-                    else if (listeningForKey.Length != 0 && listeningForKey != feature[0]) { GUI.Button(buttonRect, feature[1]); }
-                    if (listeningForKey == feature[0] && foundKey == KeyCode.None)
+                    else if (listeningForKey.Length != 0 && listeningForKey != feature[0]) { GUI.Button(buttonRect, b.keycode.ToString()); }
+                    if (listeningForKey == feature[0] && foundKey == KeyCode.None && Input.GetKey(KeyCode.Escape) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                    {
+                        b.keycode = KeyCode.None;
+                        b.keyEntry.BoxedValue = KeyCode.None.ToString();
+                        listeningForKey = "";
+                        foundKey = KeyCode.None;
+                    }
+                    else if (listeningForKey == feature[0] && foundKey == KeyCode.None)
                     {
                         GUI.Button(buttonRect, "Wating...");
                     }
@@ -816,12 +833,12 @@ namespace DDoorDebug
                 var statName = statNames[statIndex];
                 if (GUI.Button(new Rect(box.x + box.width / 2 - 28f, box.yMax - 3f - 35f, 25f, 30f), "<color=blue>+</color>"))
                 {
-                    if (Inventory.instance.GetItemCount(statName) < 5) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1); }
+                    if (Inventory.instance.GetItemCount(statName) < 5 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1); }
                     else { Inventory.instance.SetItemCount(statName, 0); }
                 }
                 if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.yMax - 3f - 35f, 25f, 30f), "<color=blue>-</color>"))
                 {
-                    if (Inventory.instance.GetItemCount(statName) > 0) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }       
+                    if (Inventory.instance.GetItemCount(statName) > 0 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }       
                     else { Inventory.instance.SetItemCount(statName, 5); }
                 }
                 GUI.Label(new Rect(box.xMax - 15f, box.y + 3f, 10f, 30f), Inventory.instance.GetItemCount(statNames[0]).ToString());
@@ -1319,6 +1336,10 @@ namespace DDoorDebug
 
             if (Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 1; }
             if (!Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 0; }
+
+            if (CheckIfPressed("Toggle night")) { LightNight.nightTime = !LightNight.nightTime; }
+            if (CheckIfPressed("Inf magic")) { infMagic = !infMagic; }
+            if (CheckIfPressed("Toggle godmode")) { PlayerGlobal.instance.gameObject.GetComponent<DamageablePlayer>().ToggleGodMode(); }
         }
 
         
