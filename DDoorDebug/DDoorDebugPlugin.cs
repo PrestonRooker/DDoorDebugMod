@@ -91,7 +91,6 @@ namespace DDoorDebug
             new List<string>() { "Show colliders", "F10", "", "f" },
             new List<string>() { "Load visible colliders", "F10", "c", "t" },
             new List<string>() { "Freecam", "F11", "", "t" },
-            new List<string>() { "Line in front of you", "Alpha0", "", "t" },
             new List<string>() { "Pos history", "P", "", "t" },
             new List<string>() { "Velocity graph", "Backspace", "", "t" },
             new List<string>() { "Timescale down", "Insert", "", "t" },
@@ -121,7 +120,14 @@ namespace DDoorDebug
             {
                 this.keyEntry = k;
                 this.modEntry = m;
-                if (!System.Enum.TryParse<KeyCode>(k.Value, out this.keycode)) { Log.LogError("Couldn't understand key " + k.Value); }
+                if (k.Value.Length > 0)
+                {
+                    if (!System.Enum.TryParse<KeyCode>(k.Value, out this.keycode)) { Log.LogError("Couldn't understand key " + k.Value); }
+                }
+                else
+                {
+                    this.keycode = KeyCode.None;
+                }
                 this.modifiers = m.Value;
                 this.extraEntry = e;
                 this.allowExtraModifiers = e.Value == "t" ? true : false;
@@ -715,7 +721,7 @@ namespace DDoorDebug
                     else
                     {
                         buttonRect = new Rect(
-                            box.x + ((box.width - (featureCount % columns) * columnWidth) / (featureCount % columns + 1) + columnWidth) * (c % columns + 1) - columnWidth,
+                            box.x + ((box.width - (featureCount % columns) * columnWidth) / (featureCount % columns + 1) + columnWidth) * (c % columns + 1) - columnWidth + gap,
                             box.y + (buttonSize.y + gap) * Mathf.Floor(featureCount / columns) + gap,
                             buttonSize.x, buttonSize.y);
                         if (GUI.Button(buttonRect, feature[0])) //extra bottom row
@@ -1115,14 +1121,6 @@ namespace DDoorDebug
                 Cache.cineBrain.enabled = !Cache.cineBrain.enabled;
                 Options.freeCamEnabled = !Cache.cineBrain.enabled;
             }
-            
-            if (CheckIfPressed("Line in front of you"))
-            {
-                if (!Cache.lineRenderer)
-                    Cache.lineRenderer = SpawnLineRenderer();
-                else
-                    Cache.lineRenderer.enabled = !Cache.lineRenderer.enabled;
-            }
 
             if (CheckIfPressed("Pos history"))
             {
@@ -1340,22 +1338,6 @@ namespace DDoorDebug
             if (CheckIfPressed("Toggle night")) { LightNight.nightTime = !LightNight.nightTime; }
             if (CheckIfPressed("Inf magic")) { infMagic = !infMagic; }
             if (CheckIfPressed("Toggle godmode")) { PlayerGlobal.instance.gameObject.GetComponent<DamageablePlayer>().ToggleGodMode(); }
-        }
-
-        
-        private LineRenderer SpawnLineRenderer()
-        {
-            var lines = PlayerGlobal.instance.transform.Find("VISUALS/crow_player (fbx)/body").gameObject.AddComponent<LineRenderer>();
-            lines.endWidth = 0.26f;
-            lines.startWidth = 0.07f;
-            lines.startColor = Color.yellow;
-            lines.endColor = Color.red;
-            lines.material = GLinesMaterial;
-            var colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.yellow, 0.0f), new GradientColorKey(Color.red, 1.0f) };
-            var alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) };
-            lines.colorGradient = new Gradient() { mode = GradientMode.Blend, colorKeys = colorKeys, alphaKeys = alphaKeys };
-            lines.positionCount = 2;
-            return lines;
         }
 
         public void AddDamageable(DamageableCharacter dmg)
