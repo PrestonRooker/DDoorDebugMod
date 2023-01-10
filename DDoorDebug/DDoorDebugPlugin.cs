@@ -700,7 +700,7 @@ namespace DDoorDebug
                 var gap = 10f;
                 var buttonSize = new Vector2(150f, 50f);
                 var columnWidth =  350f + buttonSize.x + gap * 5;
-                var box = new Rect(10f, 10f, columnWidth*columns, (buttonSize.y + gap) * (featureCount + 1) / columns + gap);
+                var box = new Rect(10f, 10f, columnWidth*columns, (buttonSize.y + gap) * (Mathf.Ceil(featureCount / columns) + 1) + gap);
                 GUI.Box(box, string.Empty);
                 var c = 0;
                 Rect buttonRect;
