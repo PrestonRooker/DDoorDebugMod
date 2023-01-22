@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using static Damageable;
+using BepInEx.Configuration;
+using System;
 
 namespace DDoorDebug.Model
 {
@@ -33,24 +35,53 @@ namespace DDoorDebug.Model
         // References
         public Dictionary<int, string> dmgTypes;
         public List<DamageableRef> damageables;
-    }
-        public struct SceneCP
-        {
-            public int hash;
-            public Vector3 pos;
-        }
 
-        public struct DamageData
+    }
+
+    public struct SceneCP
+    {
+        public int hash;
+        public Vector3 pos;
+    }
+
+    public struct DamageData
+    {
+        public float dmg;
+        public float poiseDmg;
+        public DamageType type;
+        public DamageData(float d, float p, DamageType t)
         {
-            public float dmg;
-            public float poiseDmg;
-            public DamageType type;
-            public DamageData(float d, float p, DamageType t)
-            {
-                dmg = d;
-                poiseDmg = p;
-                type = t;
-            }
+            dmg = d;
+            poiseDmg = p;
+            type = t;
         }
+    }
+
+    public struct Bind
+    {
+        public KeyCode keycode;
+        public String modifiers;
+        public bool allowExtraModifiers;
+        public ConfigEntry<String> keyEntry;
+        public ConfigEntry<String> modEntry;
+        public ConfigEntry<String> extraEntry;
+
+        public Bind(ConfigEntry<String> k, ConfigEntry<String> m, ConfigEntry<String> e)
+        {
+            this.keyEntry = k;
+            this.modEntry = m;
+            if (k.Value.Length > 0)
+            {
+                System.Enum.TryParse<KeyCode>(k.Value, out this.keycode);
+            }
+            else
+            {
+                this.keycode = KeyCode.None;
+            }
+            this.modifiers = m.Value;
+            this.extraEntry = e;
+            this.allowExtraModifiers = e.Value == "t" ? true : false;
+        }
+    }
 
 }

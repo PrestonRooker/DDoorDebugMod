@@ -55,19 +55,19 @@ namespace DDoorDebug
         public static FieldRef<PlayerGlobal, PlayerInputControl> input = FieldRefAccess<PlayerGlobal, PlayerInputControl>("input");
 
         //wijo's stuff
-        public static bool NoClip = false;
-        public static float oldSlowDown = 0;
-        public static float oldAcc = 1;
-        public static float oldSpeed = 0;
-        public static PlayerMovementControl movementControl;
-        public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" };
-        public static float timescale = 1f;
-        public static bool paused = false;
-        public static bool wasSlow = false;
-        public static bool isTurning = false;
-        public static bool HasZoomed = false;
-        public static float baseZoom = 1f;
-        public static bool infMagic = false;
+        public static bool NoClip = false; //noclip
+        public static float oldSlowDown = 0; //noclip
+        public static float oldAcc = 1; //noclip
+        public static float oldSpeed = 0; //noclip
+        public static PlayerMovementControl movementControl; //noclip
+        public static string[] statNames = new string[] { "stat_melee", "stat_dexterity", "stat_haste", "stat_magic" }; //stat menu
+        public static float timescale = 1f; //timescale
+        public static bool paused = false; //timescale
+        public static bool wasSlow = false; //timescale
+        public static bool isTurning = false; //cam rotation
+        public static bool HasZoomed = false; //zoom reset
+        public static float baseZoom = 1f; //zoom reset
+        public static bool infMagic = false; //inf magic
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -107,32 +107,7 @@ namespace DDoorDebug
             new List<string>() { "Tele down", "J", "", "t" },
             new List<string>() { "Toggle night", "", "", "t" }
         };
-        public struct Bind
-        {
-            public KeyCode keycode;
-            public String modifiers;
-            public bool allowExtraModifiers;
-            public ConfigEntry<String> keyEntry;
-            public ConfigEntry<String> modEntry;
-            public ConfigEntry<String> extraEntry;
-
-            public Bind(ConfigEntry<String> k, ConfigEntry<String> m, ConfigEntry<String> e)
-            {
-                this.keyEntry = k;
-                this.modEntry = m;
-                if (k.Value.Length > 0)
-                {
-                    if (!System.Enum.TryParse<KeyCode>(k.Value, out this.keycode)) { Log.LogError("Couldn't understand key " + k.Value); }
-                }
-                else
-                {
-                    this.keycode = KeyCode.None;
-                }
-                this.modifiers = m.Value;
-                this.extraEntry = e;
-                this.allowExtraModifiers = e.Value == "t" ? true : false;
-            }
-        }
+        
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
         public static bool bindMenuOpen = false;
         public static List<String> bufferedActions = new List<String>();
@@ -158,7 +133,7 @@ namespace DDoorDebug
             PrepareGUI();
             var harmony = new Harmony(GUID);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-         }
+        }
 
         private void PrepareGUI()
 		{
@@ -1094,8 +1069,9 @@ namespace DDoorDebug
                 WeaponSwitcher.instance.UnlockHooskhot();
             }
             if (CheckIfPressed("Save pos"))
+            {
                 DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
-
+            }
             if (CheckIfPressed("Load pos"))
             {
                 if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode())
