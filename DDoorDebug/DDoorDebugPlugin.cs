@@ -68,6 +68,7 @@ namespace DDoorDebug
         public static bool HasZoomed = false; //zoom reset
         public static float baseZoom = 1f; //zoom reset
         public static bool infMagic = false; //inf magic
+        public static bool justReloaded = false; //used for reload file
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -1330,6 +1331,7 @@ namespace DDoorDebug
                 GameSceneManager.DontSaveNext();
                 GameSceneManager.LoadSceneFadeOut(GameSave.GetSaveData().GetSpawnScene(), 0.2f, true);
                 GameSceneManager.ReloadSaveOnLoad();
+                justReloaded = true;
             }
         }
 
@@ -1337,6 +1339,11 @@ namespace DDoorDebug
         [HarmonyPostfix]
         public static void SpellUnlockFixer()
         {
+            if (!justReloaded)
+            {
+                return;
+            }
+            justReloaded = false;
             AccessTools.Field(typeof(WeaponSwitcher), "unlocked_fire").SetValue(WeaponSwitcher.instance, false);
             AccessTools.Field(typeof(WeaponSwitcher), "unlocked_bombs").SetValue(WeaponSwitcher.instance, false);
             AccessTools.Field(typeof(WeaponSwitcher), "unlocked_hookshot").SetValue(WeaponSwitcher.instance, false);
