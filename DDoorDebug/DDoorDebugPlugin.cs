@@ -25,7 +25,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.3.1";
+        const string VERSION = "0.3.2";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -105,7 +105,9 @@ namespace DDoorDebug
             new List<string>() { "Toggle noclip", "U", "", "t" },
             new List<string>() { "Tele up", "H", "", "t" },
             new List<string>() { "Tele down", "J", "", "t" },
-            new List<string>() { "Toggle night", "", "", "t" }
+            new List<string>() { "Toggle night", "", "", "t" },
+            new List<string>() { "Reload file", "O", "c", "t" }
+
         };
         
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
@@ -133,6 +135,7 @@ namespace DDoorDebug
             PrepareGUI();
             var harmony = new Harmony(GUID);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
+            harmony.PatchAll(typeof(DDoorDebugPlugin));
         }
 
         private void PrepareGUI()
@@ -621,7 +624,8 @@ namespace DDoorDebug
             var bStyle = GUI.skin.box.fontStyle;
             var bAlign = GUI.skin.box.alignment;
             var bPadding = GUI.skin.box.padding;
-			GUI.matrix = guiMatrix;
+            var oldWrap = GUI.skin.button.wordWrap;
+            GUI.matrix = guiMatrix;
 
             if (Options.menuEnabled && Event.current.type == EventType.Repaint)
             {
@@ -869,6 +873,7 @@ namespace DDoorDebug
              GUI.skin.box.fontStyle = bStyle;
              GUI.skin.box.alignment = bAlign;
              GUI.skin.box.padding = bPadding;
+             GUI.skin.button.wordWrap = oldWrap;
         }
 
         private void SampleData()
@@ -1314,6 +1319,29 @@ namespace DDoorDebug
             if (CheckIfPressed("Toggle night")) { LightNight.nightTime = !LightNight.nightTime; }
             if (CheckIfPressed("Inf magic")) { infMagic = !infMagic; }
             if (CheckIfPressed("Toggle godmode")) { PlayerGlobal.instance.gameObject.GetComponent<DamageablePlayer>().ToggleGodMode(); }
+
+            if (CheckIfPressed("Reload file"))
+            {
+                GameSave.currentSave.Load();
+                ScreenFade.storedFadeColor = Color.white;
+                ScreenFade.instance.SetColor(Color.white, false);
+                ScreenFade.instance.FadeOut(0.2f, true, null);
+                ScreenFade.instance.LockFade();
+                GameSceneManager.DontSaveNext();
+                GameSceneManager.LoadSceneFadeOut(GameSave.GetSaveData().GetSpawnScene(), 0.2f, true);
+                GameSceneManager.ReloadSaveOnLoad();
+            }
+        }
+
+        [HarmonyPatch(typeof(GameSceneManager), "OnSceneLoaded")]
+        [HarmonyPostfix]
+        public static void SpellUnlockFixer()
+        {
+            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_fire").SetValue(WeaponSwitcher.instance, false);
+            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_bombs").SetValue(WeaponSwitcher.instance, false);
+            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_hookshot").SetValue(WeaponSwitcher.instance, false);
+            AccessTools.Method(typeof(WeaponSwitcher), "Start").Invoke(WeaponSwitcher.instance, new object[] { });
+            PlayerEquipment.instance.LoadWeaponChoices();
         }
 
         public void AddDamageable(DamageableCharacter dmg)
