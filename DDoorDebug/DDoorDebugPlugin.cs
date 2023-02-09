@@ -1046,12 +1046,13 @@ namespace DDoorDebug
             {
                 foreach (var boss_str in DData.bossKeys)
                     GameSave.GetSaveData().SetKeyState(boss_str, false, false);
+                GameSave.currentSave.Save();
             }
             if (CheckIfPressed("Boss reset with cuts"))
             {
-                if (Input.GetKey(KeyCode.LeftShift))
-                    foreach (var boss_str in DData.bossesIntroKeys)
-                        GameSave.GetSaveData().SetKeyState(boss_str, false, false);
+                foreach (var boss_str in DData.bossesIntroKeys)
+                    GameSave.GetSaveData().SetKeyState(boss_str, false, false);
+                GameSave.currentSave.Save();
             }
             if (CheckIfPressed("Reset stats"))
             {

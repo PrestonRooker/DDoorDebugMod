@@ -29,8 +29,8 @@ namespace DDoorDebug.Model
         public Vector3 lastPosHistSample;
         public float lastVelSampleTime;
         public float lastPosHisSampleTime;
-        public string[] bossKeys = new string[] { "bosskill_forestmother", "c_frogdead", "gd_frog_end", "c_grandead", "c_yetidead", "c_oldcrowdead", "c_loddead" };
-        public string[] bossesIntroKeys = new string[] { "crowboss_intro_watched", "yetiboss_cutscene_watched", "grandma_fight_intro_seen", "grandma_boss_intro_watched", "frog_ghoul_intro", "frog_boss_intro_seen", "frogboss_cutscene_watched" };
+        public string[] bossKeys = new string[] { "bosskill_forestmother", "c_frogdead", "gd_frog_end", "c_grandead", "c_yetidead", "c_oldcrowdead", "c_loddead", "redeemer_complete" };
+        public string[] bossesIntroKeys = new string[] { "tut_firstintro", "fomo_intro", "graveyard_westknight", "redeemer_cutscene_watched", "crowboss_intro_watched", "yetiboss_cutscene_watched", "grandma_fight_intro_seen", "grandma_boss_intro_watched", "frog_ghoul_intro", "frog_boss_intro_seen", "frogboss_cutscene_watched", "lod_gauntlet_intro1", "lod_gauntlet_intro2", "lod_gauntlet_intro3", "lod_gauntlet_intro4", "lod_gauntlet_intro5", "lod_gauntlet_intro_done", "lod_demon1", "lod_demon2", "lod_demon3", "lod_demon4", "finallod_intro" };
 
         // References
         public Dictionary<int, string> dmgTypes;
