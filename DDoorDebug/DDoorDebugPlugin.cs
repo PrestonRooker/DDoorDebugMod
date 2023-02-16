@@ -25,7 +25,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.3.2";
+        const string VERSION = "0.3.3";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -107,6 +107,7 @@ namespace DDoorDebug
             new List<string>() { "Tele up", "H", "", "t" },
             new List<string>() { "Tele down", "J", "", "t" },
             new List<string>() { "Toggle night", "", "", "t" },
+            new List<string>() { "Save file", "S", "c", "t" },
             new List<string>() { "Reload file", "O", "c", "t" }
 
         };
@@ -821,11 +822,19 @@ namespace DDoorDebug
                 {
                     if (Inventory.instance.GetItemCount(statName) < 5 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) + 1); }
                     else { Inventory.instance.SetItemCount(statName, 0); }
+                    Inventory.instance.AddItem("stat_melee", 0);
+                    Inventory.instance.AddItem("stat_dexterity", 0);
+                    Inventory.instance.AddItem("stat_haste", 0);
+                    Inventory.instance.AddItem("stat_magic", 0);
                 }
                 if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.yMax - 3f - 35f, 25f, 30f), "<color=blue>-</color>"))
                 {
                     if (Inventory.instance.GetItemCount(statName) > 0 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }       
                     else { Inventory.instance.SetItemCount(statName, 5); }
+                    Inventory.instance.AddItem("stat_melee", 0);            
+                    Inventory.instance.AddItem("stat_dexterity", 0);            
+                    Inventory.instance.AddItem("stat_haste", 0);            
+                    Inventory.instance.AddItem("stat_magic", 0);            
                 }
                 GUI.Label(new Rect(box.xMax - 15f, box.y + 3f, 10f, 30f), Inventory.instance.GetItemCount(statNames[0]).ToString());
                 GUI.Label(new Rect(box.xMax - 15f, box.y + 33f, 10f, 30f), Inventory.instance.GetItemCount(statNames[1]).ToString());
@@ -1333,6 +1342,14 @@ namespace DDoorDebug
                 GameSceneManager.LoadSceneFadeOut(GameSave.GetSaveData().GetSpawnScene(), 0.2f, true);
                 GameSceneManager.ReloadSaveOnLoad();
                 justReloaded = true;
+            }
+            if (CheckIfPressed("Save file"))
+            {
+                if (!(GameSave.GetSaveData().GetSpawnScene() == SceneManager.GetActiveScene().name))
+                { 
+                    GameSave.GetSaveData().SetSpawnPoint(SceneManager.GetActiveScene().name, null);
+                }      
+                GameSave.GetSaveData().Save();     
             }
         }
 
