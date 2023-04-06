@@ -15,6 +15,8 @@ Follow these steps to download the mod for the first time.
 6. After this is done you should have the files winhttp.dll, BepInEx, doorstop_config.ini, and README.TXT in the same directory as DeathsDoor.exe
 7. Now the mod is installed, the next time you open Death's Door it will be running
 
+8. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
+
 If you ever want to uninstall the mod, simply rename or delete the file named winhttp.dll
 
 ## Update
@@ -27,6 +29,8 @@ Follow these steps to update the mod if you already have a previous version inst
 5. Delete the existing DDoorDebug.dll
 6. Move your new DDoorDebug.dll into the same folder, where the old DDoorDebug.dll was
 7. Now the mod is updated, the next time you open Death's Door it will be running the new version
+
+8. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
 
 ## Usage
 ```
