@@ -8,14 +8,13 @@ Debug mod for Death's Door designed to help find glitches and assist in speedrun
 Follow these steps to download the mod for the first time.
 
 1. Download the latest release of format DDoorDebugMod_vX.X.X.zip from https://github.com/PrestonRooker/DDoorDebugMod/releases
-2. Open your steam library and right click on Death's Door then click Manage>Browse Local Files
-3. This should open a folder containing DeathsDoor.exe, move the DDoorDebugMod_vX.X.X.zip into this folder
-4. Click into the .zip file and extract it here
-5. Move all the contents of the extracted folder into the same directory containing DeathsDoor.exe
-6. After this is done you should have the files winhttp.dll, BepInEx, doorstop_config.ini, and README.TXT in the same directory as DeathsDoor.exe
-7. Now the mod is installed, the next time you open Death's Door it will be running
+2. Extract the DDoorDebugMod_vX.X.X.zip folder (make sure you don't lose any of the extracted files)
+3. Open your steam library and right click on Death's Door. Then click Manage -> Browse Local Files
+4. Move all the contents of the extracted folder into the same folder containing DeathsDoor.exe
+5. After this is done you should have the files winhttp.dll, BepInEx, doorstop_config.ini, and README.TXT in the same directory as DeathsDoor.exe
+6. Now the mod is installed, the next time you open Death's Door it will be running
 
-8. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
+7. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
 
 If you ever want to uninstall the mod, simply rename or delete the file named winhttp.dll
 
@@ -23,14 +22,13 @@ If you ever want to uninstall the mod, simply rename or delete the file named wi
 Follow these steps to update the mod if you already have a previous version installed.
 
 1. Download the latest plugin of format DDoorDebug.dll from https://github.com/PrestonRooker/DDoorDebugMod/releases
-2. Find Death's Door in your steam library, right click and go to Manage>Browse Local Files
+2. Find Death's Door in your steam library, right click and go to Manage -> Browse Local Files
 3. You should be in a directory containing a folder named BepInEx
 4. Go to BepInEx/plugins
-5. Delete the existing DDoorDebug.dll
-6. Move your new DDoorDebug.dll into the same folder, where the old DDoorDebug.dll was
-7. Now the mod is updated, the next time you open Death's Door it will be running the new version
+5. Move your new DDoorDebug.dll into the same folder, replacing the old DDoorDebug.dll
+6. Now the mod is updated, the next time you open Death's Door it will be running the new version
 
-8. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
+7. If the mod doesn't appear to be functioning, try this dll instead (install using the update instructions starting from step 2): https://drive.google.com/file/d/1-XPTtx3V8XRR-AbYEeXwtyY5UrRUn69s/view?usp=sharing (this is mod version 0.3.3,.net 4.8 dll should be added to the next release.)
 
 ## Usage
 ```
