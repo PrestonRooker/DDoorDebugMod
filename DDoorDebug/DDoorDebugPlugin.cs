@@ -69,6 +69,13 @@ namespace DDoorDebug
         public static float baseZoom = 1f; //zoom reset
         public static bool infMagic = false; //inf magic
         public static bool justReloaded = false; //used for reload file
+        public static Dictionary<string, int> spellDic = new Dictionary<string, int>() //for reload file spell fix
+        {
+            { "arrow", 1 },
+            { "fire", 2 },
+            { "bombs", 3 },
+            { "hookshot", 4 }
+        };
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -1341,6 +1348,9 @@ namespace DDoorDebug
                 GameSceneManager.DontSaveNext();
                 GameSceneManager.LoadSceneFadeOut(GameSave.GetSaveData().GetSpawnScene(), 0.2f, true);
                 GameSceneManager.ReloadSaveOnLoad();
+                //fix spell
+                string id = (string)AccessTools.Field(typeof(WeaponSwitcher), "currentWeaponId").GetValue(WeaponSwitcher.instance);
+                AccessTools.Field(typeof(WeaponSwitcher), "selected").SetValue(WeaponSwitcher.instance, spellDic[id]);
                 justReloaded = true;
             }
             if (CheckIfPressed("Save file"))
@@ -1351,22 +1361,6 @@ namespace DDoorDebug
                 }      
                 GameSave.GetSaveData().Save();     
             }
-        }
-
-        [HarmonyPatch(typeof(GameSceneManager), "OnSceneLoaded")]
-        [HarmonyPostfix]
-        public static void SpellUnlockFixer()
-        {
-            if (!justReloaded)
-            {
-                return;
-            }
-            justReloaded = false;
-            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_fire").SetValue(WeaponSwitcher.instance, false);
-            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_bombs").SetValue(WeaponSwitcher.instance, false);
-            AccessTools.Field(typeof(WeaponSwitcher), "unlocked_hookshot").SetValue(WeaponSwitcher.instance, false);
-            AccessTools.Method(typeof(WeaponSwitcher), "Start").Invoke(WeaponSwitcher.instance, new object[] { });
-            PlayerEquipment.instance.LoadWeaponChoices();
         }
 
         public void AddDamageable(DamageableCharacter dmg)
