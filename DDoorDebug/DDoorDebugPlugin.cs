@@ -115,7 +115,8 @@ namespace DDoorDebug
             new List<string>() { "Tele down", "J", "", "t" },
             new List<string>() { "Toggle night", "", "", "t" },
             new List<string>() { "Save file", "S", "c", "t" },
-            new List<string>() { "Reload file", "O", "c", "t" }
+            new List<string>() { "Reload file", "O", "c", "t" },
+            new List<string>() { "Get gp", "", "", "t" }
 
         };
         
@@ -1360,6 +1361,16 @@ namespace DDoorDebug
                     GameSave.GetSaveData().SetSpawnPoint(SceneManager.GetActiveScene().name, null);
                 }      
                 GameSave.GetSaveData().Save();     
+            }
+
+            if (CheckIfPressed("Get gp"))
+            {
+                var c = PlayerGlobal.instance.gameObject.GetComponent<InputLock>();
+                if (c != null)
+                {
+                    c.enabled = false;
+                    c.enabled = true;
+                }
             }
         }
 
