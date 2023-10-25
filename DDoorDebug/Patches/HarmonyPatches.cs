@@ -163,5 +163,17 @@ namespace DDoorDebug.Patches
                 return newBody;
             }
         }
+
+        [HarmonyPatch(typeof(NPCCharacter), "FixedUpdate")]
+        static class TextSkipperPatch
+        {
+            static void Prefix(ref bool ___buttonDown)
+            {
+                if (DDoorDebug.DDoorDebugPlugin.CheckIfHeld("Instant textskip"))
+                {
+                    ___buttonDown = false;
+                }
+            }
+        }
     }
 }

@@ -83,7 +83,8 @@ namespace DDoorDebug
             new List<string>() { "Open binding menu", "Tab", "", "t" },
             new List<string>() { "Info menu", "F1", "", "t" },
             new List<string>() { "Show hp", "F2", "", "t" },
-            new List<string>() { "Warp menu", "F3", "", "t" },
+            new List<string>() { "Warp menu", "F3", "", "f" },
+            new List<string>() { "Warp to selected", "F3", "c", "t" },
             new List<string>() { "Heal to full", "F4", "", "f" },
             new List<string>() { "Auto heal", "", "", "t" },
             new List<string>() { "Inf magic", "F4", "c", "f" },
@@ -116,7 +117,8 @@ namespace DDoorDebug
             new List<string>() { "Toggle night", "", "", "t" },
             new List<string>() { "Save file", "S", "c", "t" },
             new List<string>() { "Reload file", "O", "c", "t" },
-            new List<string>() { "Get gp", "", "", "t" }
+            new List<string>() { "Get gp", "", "", "t" },
+            new List<string>() { "Instant textskip", "", "", "t" }
 
         };
         
@@ -962,7 +964,7 @@ namespace DDoorDebug
             }
         }
         
-        private bool CheckIfPressed(String name)
+        public static bool CheckIfPressed(String name)
         {
             if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
             var raw = featureBinds[name];
@@ -982,12 +984,12 @@ namespace DDoorDebug
             return result;
         }
 
-        private bool CheckIfPressedNoExtras(Bind b)
+        public static bool CheckIfPressedNoExtras(Bind b)
         {
             return Input.GetKeyUp(b.keycode) && !(b.modifiers.Contains('s') ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && !(b.modifiers.Contains('c') ^ (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && !(b.modifiers.Contains('a') ^ (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
         }
 
-        private bool CheckIfHeld(String name)
+        public static bool CheckIfHeld(String name)
         {
             if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
             var raw = featureBinds[name];
@@ -1213,6 +1215,14 @@ namespace DDoorDebug
                     FovZoom.instance.SetCurrentBaseZoom(baseZoom);
                     HasZoomed = false;
                 }
+            }
+
+            if (CheckIfPressed("Warp to selected"))
+            {
+                DoorTrigger.currentTargetDoor = "_debug";
+                GameSceneManager.LoadSceneFadeOut(DData.allScenes[sceneIndex], 0.1f, true);
+                Options.sceneMenuEnabled = false;
+                input(PlayerGlobal.instance).PauseInput(Options.sceneMenuEnabled);
             }
 
             if (Options.freeCamEnabled && Cache.mainCam != null)
