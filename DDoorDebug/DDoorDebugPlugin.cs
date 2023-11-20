@@ -1336,10 +1336,13 @@ namespace DDoorDebug
             if (CheckIfPressed("Tele up"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.up * 5;
+                CameraMovementControl.instance.SetPosition(CameraMovementControl.instance.GetFocusPos() + Vector3.up * 5);
+
             }
             if (CheckIfPressed("Tele down"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.down * 5;
+                CameraMovementControl.instance.SetPosition(CameraMovementControl.instance.GetFocusPos() + Vector3.down * 5);
             }
 
             if (Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 1; }
