@@ -111,6 +111,8 @@
   <ItemGroup>
     <Compile Include="DDoorDebugPlugin.cs" />
     <Compile Include="Extensions\MutableString.cs" />
+    <Compile Include="GUIMenus\BindMenu.cs" />
+    <Compile Include="GUIMenus\GUIBox.cs" />
     <Compile Include="Model\DamageableRef.cs" />
     <Compile Include="Model\DDoorDebugData.cs" />
     <Compile Include="Model\PluginCache.cs" />
