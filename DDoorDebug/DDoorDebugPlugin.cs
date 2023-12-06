@@ -91,7 +91,7 @@ namespace DDoorDebug
             new List<string>() { "Toggle godmode", "F4", "s", "f" },
             new List<string>() { "Boss reset", "F5", "", "t" },
             new List<string>() { "Boss reset with cuts", "F5", "s", "t" },
-            new List<string>() { "Reset stats", "F6", "", "t" },
+            new List<string>() { "Give soul", "F6", "", "t" },
             new List<string>() { "Unlock weapons", "F7", "", "t" },
             new List<string>() { "Unlock spells", "F7", "s", "t" },
             new List<string>() { "Save pos", "F8", "", "t" },
@@ -937,13 +937,9 @@ namespace DDoorDebug
                     GameSave.GetSaveData().SetKeyState(boss_str, false, false);
                 GameSave.currentSave.Save();
             }
-            if (CheckIfPressed("Reset stats"))
+            if (CheckIfPressed("Give soul"))
             {
-                Inventory.instance.AddItem("currency", 30000, false);
-                Inventory.instance.SetItemCount("stat_melee", 0);
-                Inventory.instance.SetItemCount("stat_dexterity", 0);
-                Inventory.instance.SetItemCount("stat_haste", 0);
-                Inventory.instance.SetItemCount("stat_magic", 0);
+                Inventory.instance.AddItem("currency", 100, false);
             }
             if (CheckIfPressed("Unlock weapons"))
             {

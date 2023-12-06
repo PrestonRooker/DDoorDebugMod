@@ -52,7 +52,7 @@ inf magic: you get your magic points back instantly.
 toggle godmode: toggles a state where you can't get hit.
 boss reset: brings back to life all bosses
 boss reset with cuts: same as above but also re-enables the pre-boss cutscenes
-reset stats: resets your stats and gives a lot of soul. mostly useless now that the stat menu exists.
+give soul: gives 100 soul (sorry reset stats we all loved you :c)
 unlock weapons: gives you all the weapons
 unlock spells: gives you all the spells
 save pos: saves your coordinates. does not include anything else eg. rotation.
