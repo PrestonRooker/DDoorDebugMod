@@ -76,6 +76,8 @@ namespace DDoorDebug
             { "bombs", 3 },
             { "hookshot", 4 }
         };
+        public static bool skipcs = false; //skipping cutscenes
+        public static bool inputwaspaused = false; //skipping cutscenes
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -1216,6 +1218,39 @@ namespace DDoorDebug
                     HasZoomed = false;
                 }
             }
+
+            if (CheckIfHeld("Instant textskip"))
+            {
+                skipcs = true;
+            }
+            else
+            {
+                skipcs = false;
+            }
+
+            if (skipcs || inputwaspaused)
+            {
+                wasSlow = true;
+                Time.timeScale = 20f;
+                foreach (NPCCharacter i in Resources.FindObjectsOfTypeAll<NPCCharacter>())
+                {
+                    if (!i.IsFinished())
+                    {
+                        i.NextLine();
+                    }
+                }
+                if (PlayerGlobal.instance.InputPaused())
+                { 
+                    inputwaspaused = true; 
+                }
+                if (inputwaspaused && !PlayerGlobal.instance.InputPaused())
+                {
+                    skipcs = false;
+                    inputwaspaused = false;
+                    Time.timeScale = timescale;
+                }
+            }
+            
 
             if (CheckIfPressed("Warp to selected"))
             {
