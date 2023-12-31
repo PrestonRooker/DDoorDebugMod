@@ -840,7 +840,7 @@ namespace DDoorDebug
             }
             var b = (Bind)raw;
             if (!b.allowExtraModifiers) { return CheckIfPressedNoExtras(b); }
-            var result = Input.GetKeyUp(b.keycode);
+            var result = Input.GetKeyDown(b.keycode);
             if (b.modifiers != "")
             {
                 if (b.modifiers.Contains('s') && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) { result = false; }
@@ -852,7 +852,7 @@ namespace DDoorDebug
 
         public static bool CheckIfPressedNoExtras(Bind b)
         {
-            return Input.GetKeyUp(b.keycode) && !(b.modifiers.Contains('s') ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && !(b.modifiers.Contains('c') ^ (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && !(b.modifiers.Contains('a') ^ (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
+            return Input.GetKeyDown(b.keycode) && !(b.modifiers.Contains('s') ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && !(b.modifiers.Contains('c') ^ (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && !(b.modifiers.Contains('a') ^ (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
         }
 
         public static bool CheckIfHeld(String name)
@@ -1079,16 +1079,19 @@ namespace DDoorDebug
                 }
             }
 
-            if (CheckIfHeld("Instant textskip"))
+            if (CheckIfPressed("Instant textskip"))
             {
                 skipcs = true;
             }
-            else
+            if (!CheckIfHeld("Instant textskip"))
             {
-                skipcs = false;
+                if (skipcs)
+                {
+                    skipcs = false;
+                }
             }
 
-            if (skipcs || inputwaspaused)
+            if ((skipcs && !inputwaspaused) || inputwaspaused)
             {
                 wasSlow = true;
                 Time.timeScale = 20f;
