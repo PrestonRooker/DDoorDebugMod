@@ -1083,12 +1083,9 @@ namespace DDoorDebug
             {
                 skipcs = true;
             }
-            if (!CheckIfHeld("Instant textskip"))
+			else if (!CheckIfHeld("Instant textskip"))
             {
-                if (skipcs)
-                {
-                    skipcs = false;
-                }
+				skipcs = false;
             }
 
             if ((skipcs && !inputwaspaused) || inputwaspaused)
