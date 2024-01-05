@@ -78,7 +78,7 @@ namespace DDoorDebug
         };
         public static bool skipcs = false; //skipping cutscenes
         public static bool inputwaspaused = false; //skipping cutscenes
-        public Dictionary<int, Vector3> SavePos = new Dictionary<int, Vector3>(); // save pos
+        public Dictionary<int, Vector3> savePosDic = new Dictionary<int, Vector3>(); // save pos
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -97,9 +97,10 @@ namespace DDoorDebug
             new List<string>() { "Give soul", "F6", "", "t" },
             new List<string>() { "Unlock weapons", "F7", "", "t" },
             new List<string>() { "Unlock spells", "F7", "s", "t" },
-            new List<string>() { "Save pos", "F8", "", "t" },
+            new List<string>() { "Save pos", "F8", "", "f" },
             new List<string>() { "Load pos", "F9", "", "f" },
-            new List<string>() { "Force load pos", "F9", "s", "t" },
+            new List<string>() { "Save gpos", "F8", "s", "t" },
+            new List<string>() { "Load gpos", "F9", "s", "t" },
             new List<string>() { "Show colliders", "F10", "", "f" },
             new List<string>() { "Load visible colliders", "F10", "c", "t" },
             new List<string>() { "Freecam", "F11", "", "t" },
@@ -959,22 +960,27 @@ namespace DDoorDebug
             }
             if (CheckIfPressed("Save pos"))
             {
-                SavePos[DData.curActiveScene.GetHashCode()] = PlayerGlobal.instance.transform.position;
-                //DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
+                savePosDic[DData.curActiveScene.GetHashCode()] = PlayerGlobal.instance.transform.position;
             }
             if (CheckIfPressed("Load pos"))
             {
-                if (SavePos.ContainsKey(DData.curActiveScene.GetHashCode())) 
+                if (savePosDic.ContainsKey(DData.curActiveScene.GetHashCode())) 
                 {
-                    PlayerGlobal.instance.SetPosition(SavePos[DData.curActiveScene.GetHashCode()], false, false);
+                    PlayerGlobal.instance.SetPosition(savePosDic[DData.curActiveScene.GetHashCode()], false, false);
                 }
-                /*if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode())
-                    PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);*/
             }
-            if (CheckIfPressed("Force load pos"))
+
+            if (CheckIfPressed("Load gpos"))
             {
-                PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
+				if (DData.lastCheckPoint.pos != null)
+				{
+                	PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
+				}
             }
+			if (CheckIfPressed("Save gpos"))
+			{
+				DData.lastCheckPoint.pos = PlayerGlobal.instance.transform.position;
+			}
 
             if (CheckIfPressed("Show colliders"))
             {

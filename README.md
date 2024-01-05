@@ -55,9 +55,10 @@ boss reset with cuts: same as above but also re-enables the pre-boss cutscenes
 give soul: gives 100 soul (sorry reset stats we all loved you :c)
 unlock weapons: gives you all the weapons
 unlock spells: gives you all the spells
-save pos: saves your coordinates. does not include anything else eg. rotation.
-load pos: loads saved coordinates, locked to the map you saved them on.
-force load pos: same as above but allows you to load the coords in other maps as well
+save pos: saves your coordinates for the current map. does not include anything else eg. rotation.
+load pos: loads saved coordinates for the current map.
+save gpos: saves over the global position, which is shared across maps.
+save gpos: loads the global position, which is shared across maps.
 show colliders: cycles between what colliders are shown.
 load visible colliders: loads all visible colliders into memory to then be shown accrding to the above option.
 freecam: allows you to look with the mouse. (og creator intended this to be a full on fps fly but it's non-functional)
