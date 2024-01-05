@@ -78,6 +78,7 @@ namespace DDoorDebug
         };
         public static bool skipcs = false; //skipping cutscenes
         public static bool inputwaspaused = false; //skipping cutscenes
+        public Dictionary<int, Vector3> SavePos = new Dictionary<int, Vector3>(); // save pos
 
         //bind menu
         public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
@@ -958,12 +959,17 @@ namespace DDoorDebug
             }
             if (CheckIfPressed("Save pos"))
             {
-                DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
+                SavePos[DData.curActiveScene.GetHashCode()] = PlayerGlobal.instance.transform.position;
+                //DData.lastCheckPoint = new SceneCP() { hash = DData.curActiveScene.GetHashCode(), pos = PlayerGlobal.instance.transform.position };
             }
             if (CheckIfPressed("Load pos"))
             {
-                if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode())
-                    PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
+                if (SavePos.ContainsKey(DData.curActiveScene.GetHashCode())) 
+                {
+                    PlayerGlobal.instance.SetPosition(SavePos[DData.curActiveScene.GetHashCode()], false, false);
+                }
+                /*if (DData.lastCheckPoint.hash == DData.curActiveScene.GetHashCode())
+                    PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);*/
             }
             if (CheckIfPressed("Force load pos"))
             {
@@ -1232,7 +1238,6 @@ namespace DDoorDebug
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.up * 5;
                 CameraMovementControl.instance.SetPosition(CameraMovementControl.instance.GetFocusPos() + Vector3.up * 5);
-
             }
             if (CheckIfPressed("Tele down"))
             {
