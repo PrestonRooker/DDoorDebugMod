@@ -94,7 +94,7 @@ namespace DDoorDebug
             new List<string>() { "Toggle godmode", "F4", "s", "f" },
             new List<string>() { "Boss reset", "F5", "", "t" },
             new List<string>() { "Boss reset with cuts", "F5", "s", "t" },
-            new List<string>() { "Reset stats", "F6", "", "t" },
+            new List<string>() { "Give soul", "F6", "", "t" },
             new List<string>() { "Unlock weapons", "F7", "", "t" },
             new List<string>() { "Unlock spells", "F7", "s", "t" },
             new List<string>() { "Save pos", "F8", "", "t" },
@@ -121,8 +121,7 @@ namespace DDoorDebug
             new List<string>() { "Save file", "S", "c", "t" },
             new List<string>() { "Reload file", "O", "c", "t" },
             new List<string>() { "Get gp", "", "", "t" },
-            new List<string>() { "Instant textskip", "", "", "t" }
-
+            new List<string>() { "Instant textskip", "", "", "t" },
         };
         
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
@@ -685,142 +684,7 @@ namespace DDoorDebug
             {
                 UI_Control.HideUI();
                 Cursor.visible = true;
-                GUI.skin.button.fontSize = 18;
-                GUI.skin.button.fontStyle = FontStyle.Normal;
-                GUI.skin.button.wordWrap = true;
-                var featureCount = features.Count();
-                var columns = 3;
-                var featuresPerColumn = Mathf.Floor(features.Count() / columns);
-                var gap = 10f;
-                var buttonSize = new Vector2(150f, 50f);
-                var columnWidth =  350f + buttonSize.x + gap * 5;
-                var box = new Rect(10f, 10f, columnWidth*columns, (buttonSize.y + gap) * (Mathf.Ceil(featureCount / columns) + 1) + gap);
-                GUI.Box(box, string.Empty);
-                var c = 0;
-                Rect buttonRect;
-                foreach (var feature in features)
-                {
-                    var currentColumn = Mathf.Floor((c) / featuresPerColumn);
-                    if (currentColumn < columns)
-                    {
-                        buttonRect = new Rect(
-                            box.x + gap + columnWidth * currentColumn, 
-                            box.y + (buttonSize.y + gap) * (c - currentColumn * featuresPerColumn) + gap, 
-                            buttonSize.x, buttonSize.y);
-                        if (GUI.Button(buttonRect, feature[0])) //main columns
-                        {
-                            bufferedActions.Add(feature[0]);
-                        }
-                    }
-                    else
-                    {
-                        buttonRect = new Rect(
-                            box.x + ((box.width - (featureCount % columns) * columnWidth) / (featureCount % columns + 1) + columnWidth) * (c % columns + 1) - columnWidth + gap,
-                            box.y + (buttonSize.y + gap) * Mathf.Floor(featureCount / columns) + gap,
-                            buttonSize.x, buttonSize.y);
-                        if (GUI.Button(buttonRect, feature[0])) //extra bottom row
-                        {
-                            bufferedActions.Add(feature[0]);
-                        }
-                    }
-
-                    Bind b = (Bind)featureBinds[feature[0]];
-
-                    buttonRect = new Rect(buttonRect.xMax + gap, buttonRect.y, 125f, buttonSize.y); //bind button width here
-                    if (listeningForKey.Length == 0 && GUI.Button(buttonRect, b.keycode.ToString())) 
-                    {
-                        listeningForKey = feature[0];
-                    }
-                    else if (listeningForKey.Length != 0 && listeningForKey != feature[0]) { GUI.Button(buttonRect, b.keycode.ToString()); }
-                    if (listeningForKey == feature[0] && foundKey == KeyCode.None && Input.GetKey(KeyCode.Escape) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
-                    {
-                        b.keycode = KeyCode.None;
-                        b.keyEntry.BoxedValue = KeyCode.None.ToString();
-                        listeningForKey = "";
-                        foundKey = KeyCode.None;
-                    }
-                    else if (listeningForKey == feature[0] && foundKey == KeyCode.None)
-                    {
-                        GUI.Button(buttonRect, "Wating...");
-                    }
-                    if (listeningForKey == feature[0] && foundKey != KeyCode.None)
-                    {
-                        b.keycode = foundKey;
-                        b.keyEntry.BoxedValue = foundKey.ToString();
-                        listeningForKey = "";
-                        foundKey = KeyCode.None;
-                    }           
-                    var modifiers = b.modifiers;
-                    buttonRect = new Rect(buttonRect.xMax + gap, buttonRect.y, 50f, buttonSize.y);
-                    var oldState = modifiers.Contains('s');
-                    var newState = GUI.Toggle(buttonRect, oldState, "s", "Button"); //shift modifier
-                    if (oldState != newState) 
-                    {
-                        string n = modifiers;
-                        if (oldState)
-                        {
-                            n = n.Replace("s", String.Empty);
-                        }
-                        else
-                        {
-                            n += "s";
-                        }
-                        b.modifiers = n;
-                        b.modEntry.BoxedValue = n;
-                    }
-                    buttonRect = new Rect(buttonRect.xMax, buttonRect.y, 50f, buttonSize.y);
-                    oldState = modifiers.Contains('c');
-                    newState = GUI.Toggle(buttonRect, oldState, "c", "Button"); //ctrl modifier
-                    if (oldState != newState)
-                    {
-                        string n = modifiers;
-                        if (oldState)
-                        {
-                            n = n.Replace("c", String.Empty);
-                        }
-                        else
-                        {
-                            n += "c";
-                        }
-                        b.modifiers = n;
-                        b.modEntry.BoxedValue = n;
-                    }
-                    buttonRect = new Rect(buttonRect.xMax, buttonRect.y, 50f, buttonSize.y);
-                    oldState = modifiers.Contains('a');
-                    newState = GUI.Toggle(buttonRect, oldState, "a", "Button"); //alt modifier
-                    if (oldState != newState)
-                    {
-                        string n = modifiers;
-                        if (oldState)
-                        {
-                            n = n.Replace("a", String.Empty);
-                        }
-                        else
-                        {
-                            n += "a";
-                        }
-                        b.modifiers = n;
-                        b.modEntry.BoxedValue = n;
-                    }
-                    buttonRect = new Rect(buttonRect.xMax + gap, buttonRect.y, 75f, buttonSize.y);
-                    oldState = b.allowExtraModifiers;
-                    newState = GUI.Toggle(buttonRect, oldState, "Extra", "Button");
-                    if (oldState != newState)
-                    {
-                        b.allowExtraModifiers = !b.allowExtraModifiers;
-                        if (newState)
-                        {
-                            b.extraEntry.BoxedValue = "t";
-                        }
-                        else
-                        {
-                            b.extraEntry.BoxedValue = "f";
-                        }
-                    }
-
-                    featureBinds[feature[0]] = b;
-                    c++;
-                }
+                GUIMenus.BindMenu.OnGUI();
             }
 
             if (UIMenuPauseController.instance.IsPaused())
@@ -1076,13 +940,9 @@ namespace DDoorDebug
                     GameSave.GetSaveData().SetKeyState(boss_str, false, false);
                 GameSave.currentSave.Save();
             }
-            if (CheckIfPressed("Reset stats"))
+            if (CheckIfPressed("Give soul"))
             {
-                Inventory.instance.AddItem("currency", 30000, false);
-                Inventory.instance.SetItemCount("stat_melee", 0);
-                Inventory.instance.SetItemCount("stat_dexterity", 0);
-                Inventory.instance.SetItemCount("stat_haste", 0);
-                Inventory.instance.SetItemCount("stat_magic", 0);
+                Inventory.instance.AddItem("currency", 100, false);
             }
             if (CheckIfPressed("Unlock weapons"))
             {
@@ -1229,12 +1089,9 @@ namespace DDoorDebug
             {
                 skipcs = true;
             }
-            if (!CheckIfHeld("Instant textskip"))
+			else if (!CheckIfHeld("Instant textskip"))
             {
-                if (skipcs)
-                {
-                    skipcs = false;
-                }
+				skipcs = false;
             }
 
             if ((skipcs && !inputwaspaused) || inputwaspaused)
