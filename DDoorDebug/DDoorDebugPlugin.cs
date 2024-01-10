@@ -25,7 +25,7 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.3.4";
+        const string VERSION = "0.3.5";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
@@ -123,6 +123,7 @@ namespace DDoorDebug
             new List<string>() { "Reload file", "O", "c", "t" },
             new List<string>() { "Get gp", "", "", "t" },
             new List<string>() { "Instant textskip", "", "", "t" },
+            new List<string>() { "Toggle Timestop", "", "", "t" },
         };
         
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
@@ -1122,7 +1123,19 @@ namespace DDoorDebug
                     Time.timeScale = timescale;
                 }
             }
-            
+
+            if (CheckIfPressed("Toggle Timestop"))
+            {
+                if (PlayerGlobal.instance.IsInputPausedCutscene() || PlayerGlobal.instance.IsInputPausedTalk())
+                {
+                    PlayerGlobal.instance.UnPauseInput_Cutscene();
+                }
+                else
+                {
+                    PlayerGlobal.instance.PauseInput_Talk();
+                    PlayerGlobal.instance.UnPauseInput();
+                }
+            }
 
             if (CheckIfPressed("Warp to selected"))
             {
