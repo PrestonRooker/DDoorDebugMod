@@ -80,67 +80,11 @@ namespace DDoorDebug
         public static bool inputwaspaused = false; //skipping cutscenes
         public Dictionary<int, Vector3> savePosDic = new Dictionary<int, Vector3>(); // save pos
 
-        //bind menu
-        public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
-        {
-            new List<string>() { "Open binding menu", "Tab", "", "t" },
-            new List<string>() { "Info menu", "F1", "", "t" },
-            new List<string>() { "Show hp", "F2", "", "t" },
-            new List<string>() { "Warp menu", "F3", "", "f" },
-            new List<string>() { "Warp to selected", "F3", "c", "t" },
-            new List<string>() { "Heal to full", "F4", "", "f" },
-            new List<string>() { "Auto heal", "", "", "t" },
-            new List<string>() { "Inf magic", "F4", "c", "f" },
-            new List<string>() { "Toggle godmode", "F4", "s", "f" },
-            new List<string>() { "Boss reset", "F5", "", "t" },
-            new List<string>() { "Boss reset with cuts", "F5", "s", "t" },
-            new List<string>() { "Give soul", "F6", "", "t" },
-            new List<string>() { "Unlock weapons", "F7", "", "t" },
-            new List<string>() { "Unlock spells", "F7", "s", "t" },
-            new List<string>() { "Save pos", "F8", "", "f" },
-            new List<string>() { "Load pos", "F9", "", "f" },
-            new List<string>() { "Save gpos", "F8", "s", "t" },
-            new List<string>() { "Load gpos", "F9", "s", "t" },
-            new List<string>() { "Show colliders", "F10", "", "f" },
-            new List<string>() { "Load visible colliders", "F10", "c", "t" },
-            new List<string>() { "Freecam", "F11", "", "t" },
-            new List<string>() { "Pos history", "P", "", "t" },
-            new List<string>() { "Velocity graph", "Backspace", "", "t" },
-            new List<string>() { "Timescale down", "Insert", "", "t" },
-            new List<string>() { "Timescale up", "PageUp", "", "t" },
-            new List<string>() { "Reset timescale", "Home", "", "t" },
-            new List<string>() { "Rotate cam right", "Delete", "", "t" },
-            new List<string>() { "Rotate cam left", "PageDown", "", "t" },
-            new List<string>() { "Reset cam", "End", "", "t" },
-            new List<string>() { "Mouse tele", "Mouse0", "c", "t" },
-            new List<string>() { "Zoom in", "Minus", "", "t" },
-            new List<string>() { "Zoom out", "Equals", "", "t" },
-            new List<string>() { "Toggle noclip", "U", "", "t" },
-            new List<string>() { "Tele up", "H", "", "t" },
-            new List<string>() { "Tele down", "J", "", "t" },
-            new List<string>() { "Toggle night", "", "", "t" },
-            new List<string>() { "Save file", "S", "c", "t" },
-            new List<string>() { "Reload file", "O", "c", "t" },
-            new List<string>() { "Get gp", "", "", "t" },
-            new List<string>() { "Instant textskip", "", "", "t" },
-        };
-        
-        public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
-        public static bool bindMenuOpen = false;
-        public static List<String> bufferedActions = new List<String>();
-        public static String listeningForKey = "";
-        public static KeyCode foundKey;
-
         internal static new ManualLogSource Log; //logging (idk if this is needed whatever I have it in other projects too c:)
 
         private void Awake()
         {
             Log = base.Logger;
-
-            foreach(var feature in features)
-            {
-                featureBinds.Add(feature[0], new Bind(Config.Bind(feature[0], "key/button", feature[1]), Config.Bind(feature[0], "modifiers", feature[2]), Config.Bind(feature[0], "allow extra modifiers", feature[3])));
-            }
 
             instance = this;
             Options = new PluginOptions();
@@ -483,7 +427,7 @@ namespace DDoorDebug
             SampleData();
             DrawLine();
             DrawMeshColliders();
-            listenForKeys();
+            GUIMenus.BindMenu.listenForKeys();
         }
 
         // We could rewrite it to be generic but who cares
@@ -607,25 +551,11 @@ namespace DDoorDebug
             {
                 UIArrowChargeBar.instance.GainCharge(8);
             }
-        }
-
-        private void listenForKeys()
-        {
-            if (!Input.anyKeyDown || listeningForKey.Length == 0) { return; }
-            foreach (KeyCode k in Enum.GetValues(typeof(KeyCode)))
-            {
-                if (k != KeyCode.None && Input.GetKeyDown(k))
-                {
-                    Log.LogWarning(k.ToString());
-                    foundKey = k;
-                    return;
-                }
-            }
-        }
-            
+        }      
 
         private void OnGUI()
         {
+            if (!GUIMenus.BindMenu.hasInit) { GUIMenus.BindMenu.init(Config); }
             if (!CanRender())
                 return;
 
@@ -681,7 +611,7 @@ namespace DDoorDebug
                 }
             }
 
-            if (bindMenuOpen)
+            if (GUIMenus.BindMenu.bindMenuOpen)
             {
                 UI_Control.HideUI();
                 Cursor.visible = true;
@@ -831,80 +761,25 @@ namespace DDoorDebug
                 guiOutputStr = builder.Finalize();
             }
         }
-        
-        public static bool CheckIfPressed(String name)
-        {
-            if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
-            var raw = featureBinds[name];
-            if (!(raw.GetType() == typeof(Bind)))
-            {
-                return false;
-            }
-            var b = (Bind)raw;
-            if (!b.allowExtraModifiers) { return CheckIfPressedNoExtras(b); }
-            var result = Input.GetKeyDown(b.keycode);
-            if (b.modifiers != "")
-            {
-                if (b.modifiers.Contains('s') && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) { result = false; }
-                if (b.modifiers.Contains('c') && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) { result = false; }
-                if (b.modifiers.Contains('a') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))) { result = false; }
-            }
-            return result;
-        }
-
-        public static bool CheckIfPressedNoExtras(Bind b)
-        {
-            return Input.GetKeyDown(b.keycode) && !(b.modifiers.Contains('s') ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && !(b.modifiers.Contains('c') ^ (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && !(b.modifiers.Contains('a') ^ (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
-        }
-
-        public static bool CheckIfHeld(String name)
-        {
-            if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
-            var raw = featureBinds[name];
-            if (!(raw.GetType() == typeof(Bind)))
-            {
-                return false;
-            }
-            var b = (Bind)raw;
-            var result = Input.GetKey(b.keycode);
-            if (b.modifiers != "")
-            {
-                if (b.modifiers.Contains('s') && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) { result = false; }
-                if (b.modifiers.Contains('c') && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) { result = false; }
-                if (b.modifiers.Contains('a') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))) { result = false; }
-            }
-            return result;
-        }
-
-        private bool CheckIfModifierHeld(String name)
-        {
-            var raw = featureBinds[name];
-            if (!(raw.GetType() == typeof(Bind)))
-            {
-                return false;
-            }
-            var b = (Bind)raw;
-            return (!b.modifiers.Contains("s") || (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && (!b.modifiers.Contains("c") || (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && (!b.modifiers.Contains("a") || (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
-        }
 
         private void ProcessInput()
         {
             if (!CanRender()) return;
 
-            if (CheckIfPressed("Open binding menu"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Open binding menu"))
             {
-                input(PlayerGlobal.instance).PauseInput(Toggle(ref bindMenuOpen));
+                input(PlayerGlobal.instance).PauseInput(Toggle(ref GUIMenus.BindMenu.bindMenuOpen));
                 Options.sceneMenuEnabled = false;
-                if (!bindMenuOpen) { UI_Control.ShowUI(); }
+                if (!GUIMenus.BindMenu.bindMenuOpen) { UI_Control.ShowUI(); }
             }
 
-            if (CheckIfPressed("Info menu"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Info menu"))
             {
                 Toggle(ref Options.menuEnabled);
                 DData.lastVelocity = 0;
             }
 
-            if (CheckIfPressed("Show hp"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Show hp"))
             {
                 DData.damageables.Clear();
                 if (Toggle(ref Options.hpEnabled))
@@ -914,55 +789,55 @@ namespace DDoorDebug
                         AddDamageable(foundDmgbls[i]);
                 }
             }
-            if (CheckIfPressed("Warp menu"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Warp menu"))
             {
                 input(PlayerGlobal.instance).PauseInput(Toggle(ref Options.sceneMenuEnabled));
-                bindMenuOpen = false;
+                GUIMenus.BindMenu.bindMenuOpen = false;
             }
-            if (CheckIfPressed("Heal to full"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Heal to full"))
             {
                 DData.dmgObject.HealToFull();
             }
 
-            if (CheckIfPressed("Auto heal"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Auto heal"))
             {
                 Toggle(ref Options.autoHeal);
             }
 
-            if (CheckIfPressed("Boss reset"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Boss reset"))
             {
                 foreach (var boss_str in DData.bossKeys)
                     GameSave.GetSaveData().SetKeyState(boss_str, false, false);
                 GameSave.currentSave.Save();
             }
-            if (CheckIfPressed("Boss reset with cuts"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Boss reset with cuts"))
             {
                 foreach (var boss_str in DData.bossesIntroKeys)
                     GameSave.GetSaveData().SetKeyState(boss_str, false, false);
                 GameSave.currentSave.Save();
             }
-            if (CheckIfPressed("Give soul"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Give soul"))
             {
                 Inventory.instance.AddItem("currency", 100, false);
             }
-            if (CheckIfPressed("Unlock weapons"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Unlock weapons"))
             {
                 Inventory.instance.AddItem("daggers", 1, false);
                 Inventory.instance.AddItem("hammer", 1, false);
                 Inventory.instance.AddItem("sword_heavy", 1, false);
                 Inventory.instance.AddItem("umbrella", 1, false);
             }
-            if (CheckIfPressed("Unlock spells"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Unlock spells"))
             {
                 WeaponSwitcher.instance.UnlockBombs();
                 WeaponSwitcher.instance.UnlockFire();
                 WeaponSwitcher.instance.UnlockHooskhot();
             }
-            if (CheckIfPressed("Save pos"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Save pos"))
             {
                 savePosDic[DData.curActiveScene.GetHashCode()] = PlayerGlobal.instance.transform.position;
             }
-            if (CheckIfPressed("Load pos"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Load pos"))
             {
                 if (savePosDic.ContainsKey(DData.curActiveScene.GetHashCode())) 
                 {
@@ -970,54 +845,54 @@ namespace DDoorDebug
                 }
             }
 
-            if (CheckIfPressed("Load gpos"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Load gpos"))
             {
 				if (DData.lastCheckPoint.pos != null)
 				{
                 	PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
 				}
             }
-			if (CheckIfPressed("Save gpos"))
+			if (GUIMenus.BindMenu.CheckIfPressed("Save gpos"))
 			{
 				DData.lastCheckPoint.pos = PlayerGlobal.instance.transform.position;
 			}
 
-            if (CheckIfPressed("Show colliders"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Show colliders"))
             {
                 Options.collViewMode[Options.cvmPos] = (byte)(1 - Options.collViewMode[Options.cvmPos]);
                 Options.cvmPos = ++Options.cvmPos % Options.collViewMode.Length;
             }
-            if (CheckIfPressed("Load visible colliders"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Load visible colliders"))
             {
                 FullSweep(PlayerGlobal.instance.transform);
             }
 
-            if (CheckIfPressed("Freecam") && Cache.cineBrain != null)
+            if (GUIMenus.BindMenu.CheckIfPressed("Freecam") && Cache.cineBrain != null)
             {
                 Cache.cineBrain.enabled = !Cache.cineBrain.enabled;
                 Options.freeCamEnabled = !Cache.cineBrain.enabled;
             }
 
-            if (CheckIfPressed("Pos history"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Pos history"))
             {
                 Toggle(ref Options.posHistGraphEnabled);
                 DData.posHistSamples.Clear();
             }
 
-            if (CheckIfPressed("Velocity graph"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Velocity graph"))
                 Toggle(ref Options.velGraphEnabled);
 
-            if (CheckIfPressed("Timescale down"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Timescale down"))
             {
                 timescale = Mathf.Clamp(timescale - 0.25f, 0f, 5f);
                 Time.timeScale = timescale;
             }
-            if (CheckIfPressed("Timescale up"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Timescale up"))
             {
                 timescale = Mathf.Clamp(timescale + 0.25f, 0f, 5f);
                 Time.timeScale = timescale;
             }
-            if (CheckIfPressed("Reset timescale"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Reset timescale"))
             {
                 timescale = 1f;
                 Time.timeScale = timescale;
@@ -1047,11 +922,11 @@ namespace DDoorDebug
                 timescale = Time.timeScale;
             }        
 
-            Buttons.PauseInput(CheckIfModifierHeld("Mouse tele"));
-            if (CheckIfPressed("Mouse tele") && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
+            Buttons.PauseInput(GUIMenus.BindMenu.CheckIfModifierHeld("Mouse tele"));
+            if (GUIMenus.BindMenu.CheckIfPressed("Mouse tele") && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
                 SpawnAtCursor();
 
-            if (CheckIfHeld("Rotate cam right") && CameraRotationControl.instance)
+            if (GUIMenus.BindMenu.CheckIfHeld("Rotate cam right") && CameraRotationControl.instance)
             {
                 var currAngle = angle(CameraRotationControl.instance) + 1.5f;
                 if (currAngle > 360) { currAngle -= 360; }
@@ -1059,7 +934,7 @@ namespace DDoorDebug
                 isTurning = true;
             }
             
-            if (!CheckIfHeld("Rotate cam right") && CameraRotationControl.instance && isTurning)
+            if (!GUIMenus.BindMenu.CheckIfHeld("Rotate cam right") && CameraRotationControl.instance && isTurning)
             {
                 isTurning = false;
                 var currAngle = angle(CameraRotationControl.instance);
@@ -1067,21 +942,21 @@ namespace DDoorDebug
             }
 
 
-            if (CheckIfHeld("Rotate cam left") && CameraRotationControl.instance)
+            if (GUIMenus.BindMenu.CheckIfHeld("Rotate cam left") && CameraRotationControl.instance)
             {
                 var currAngle = angle(CameraRotationControl.instance) - 1.5f;
                 if (currAngle < 0) { currAngle += 360; }
                 CameraRotationControl.instance.Rotate(currAngle, 1000);
                 isTurning = true;
             }
-            if (!CheckIfHeld("Rotate cam left") && CameraRotationControl.instance && isTurning)
+            if (!GUIMenus.BindMenu.CheckIfHeld("Rotate cam left") && CameraRotationControl.instance && isTurning)
             {
                 isTurning = false;
                 var currAngle = angle(CameraRotationControl.instance);
                 CameraRotationControl.instance.Rotate(currAngle, 3);
             }
 
-            if (CheckIfPressed("Reset cam") && CameraRotationControl.instance && !isTurning)
+            if (GUIMenus.BindMenu.CheckIfPressed("Reset cam") && CameraRotationControl.instance && !isTurning)
             {
                 CameraRotationControl.instance.Rotate(0, 12);
                 if (HasZoomed)
@@ -1091,11 +966,11 @@ namespace DDoorDebug
                 }
             }
 
-            if (CheckIfPressed("Instant textskip"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Instant textskip"))
             {
                 skipcs = true;
             }
-			else if (!CheckIfHeld("Instant textskip"))
+			else if (!GUIMenus.BindMenu.CheckIfHeld("Instant textskip"))
             {
 				skipcs = false;
             }
@@ -1124,7 +999,7 @@ namespace DDoorDebug
             }
             
 
-            if (CheckIfPressed("Warp to selected"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Warp to selected"))
             {
                 DoorTrigger.currentTargetDoor = "_debug";
                 GameSceneManager.LoadSceneFadeOut(DData.allScenes[sceneIndex], 0.1f, true);
@@ -1181,13 +1056,13 @@ namespace DDoorDebug
                 {
                     Cache.mainCam.transform.localRotation = currEulerAngles;
                 }
-                if (CheckIfPressed("Zoom in")) { Cache.mainCam.fieldOfView -= 0.5f * Time.deltaTime; }
-                if (CheckIfPressed("Zoom out")) { Cache.mainCam.fieldOfView += 0.5f * Time.deltaTime; }
+                if (GUIMenus.BindMenu.CheckIfPressed("Zoom in")) { Cache.mainCam.fieldOfView -= 0.5f * Time.deltaTime; }
+                if (GUIMenus.BindMenu.CheckIfPressed("Zoom out")) { Cache.mainCam.fieldOfView += 0.5f * Time.deltaTime; }
                 if (Input.GetKey(KeyCode.R)) { Cache.mainCam.transform.position += Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime; }
                 if (Input.GetKey(KeyCode.Y)) { Cache.mainCam.transform.position -= Cache.mainCam.transform.up * (Options.freeLookConf.climbSpeed * factor) * Time.deltaTime; }
             }
 
-            if (CheckIfPressed("Zoom in") && !Options.freeCamEnabled && FovZoom.instance)
+            if (GUIMenus.BindMenu.CheckIfPressed("Zoom in") && !Options.freeCamEnabled && FovZoom.instance)
             {
                 if (!HasZoomed)
                 {
@@ -1197,7 +1072,7 @@ namespace DDoorDebug
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) - 2f);
             }
 
-            if (CheckIfPressed("Zoom out") && !Options.freeCamEnabled && FovZoom.instance)
+            if (GUIMenus.BindMenu.CheckIfPressed("Zoom out") && !Options.freeCamEnabled && FovZoom.instance)
             {
                 if (!HasZoomed)
                 {
@@ -1207,7 +1082,7 @@ namespace DDoorDebug
                 FovZoom.instance.SetCurrentBaseZoom(currentBaseFov(FovZoom.instance) + 2f);
             }
 
-            if (CheckIfPressed("Toggle noclip"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Toggle noclip"))
             {
                 movementControl = FindObjectOfType<PlayerMovementControl>();
                 if (NoClip)
@@ -1240,12 +1115,12 @@ namespace DDoorDebug
                 }
 
             }
-            if (CheckIfPressed("Tele up"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Tele up"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.up * 5;
                 CameraMovementControl.instance.SetPosition(CameraMovementControl.instance.GetFocusPos() + Vector3.up * 5);
             }
-            if (CheckIfPressed("Tele down"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Tele down"))
             {
                 FindObjectOfType<PlayerGlobal>().gameObject.transform.position += Vector3.down * 5;
                 CameraMovementControl.instance.SetPosition(CameraMovementControl.instance.GetFocusPos() + Vector3.down * 5);
@@ -1254,11 +1129,11 @@ namespace DDoorDebug
             if (Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 1; }
             if (!Input.anyKey && NoClip) { movementControl.slowDownMultiplier = 0; }
 
-            if (CheckIfPressed("Toggle night")) { LightNight.nightTime = !LightNight.nightTime; }
-            if (CheckIfPressed("Inf magic")) { infMagic = !infMagic; }
-            if (CheckIfPressed("Toggle godmode")) { PlayerGlobal.instance.gameObject.GetComponent<DamageablePlayer>().ToggleGodMode(); }
+            if (GUIMenus.BindMenu.CheckIfPressed("Toggle night")) { LightNight.nightTime = !LightNight.nightTime; }
+            if (GUIMenus.BindMenu.CheckIfPressed("Inf magic")) { infMagic = !infMagic; }
+            if (GUIMenus.BindMenu.CheckIfPressed("Toggle godmode")) { PlayerGlobal.instance.gameObject.GetComponent<DamageablePlayer>().ToggleGodMode(); }
 
-            if (CheckIfPressed("Reload file"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Reload file"))
             {
                 GameSave.currentSave.Load();
                 ScreenFade.storedFadeColor = Color.white;
@@ -1273,7 +1148,7 @@ namespace DDoorDebug
                 AccessTools.Field(typeof(WeaponSwitcher), "selected").SetValue(WeaponSwitcher.instance, spellDic[id]);
                 justReloaded = true;
             }
-            if (CheckIfPressed("Save file"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Save file"))
             {
                 if (!(GameSave.GetSaveData().GetSpawnScene() == SceneManager.GetActiveScene().name))
                 { 
@@ -1282,7 +1157,7 @@ namespace DDoorDebug
                 GameSave.GetSaveData().Save();     
             }
 
-            if (CheckIfPressed("Get gp"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Get gp"))
             {
                 var c = PlayerGlobal.instance.gameObject.GetComponent<InputLock>();
                 if (c != null)

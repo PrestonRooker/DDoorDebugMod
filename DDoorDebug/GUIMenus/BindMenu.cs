@@ -5,21 +5,84 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using DDoorDebug.Model;
+using System.Collections;
+using BepInEx;
+using BepInEx.Configuration;
 
 namespace DDoorDebug.GUIMenus
 {
     public static class BindMenu
     {
+        public static List<String>[] features = new List<string>[] // { "name in config file", "default bind", "default modifiers", "allow extra modifiers" (t/f) }
+   {
+            new List<string>() { "Open binding menu", "Tab", "", "t" },
+            new List<string>() { "Info menu", "F1", "", "t" },
+            new List<string>() { "Show hp", "F2", "", "t" },
+            new List<string>() { "Warp menu", "F3", "", "f" },
+            new List<string>() { "Warp to selected", "F3", "c", "t" },
+            new List<string>() { "Heal to full", "F4", "", "f" },
+            new List<string>() { "Auto heal", "", "", "t" },
+            new List<string>() { "Inf magic", "F4", "c", "f" },
+            new List<string>() { "Toggle godmode", "F4", "s", "f" },
+            new List<string>() { "Boss reset", "F5", "", "t" },
+            new List<string>() { "Boss reset with cuts", "F5", "s", "t" },
+            new List<string>() { "Give soul", "F6", "", "t" },
+            new List<string>() { "Unlock weapons", "F7", "", "t" },
+            new List<string>() { "Unlock spells", "F7", "s", "t" },
+            new List<string>() { "Save pos", "F8", "", "f" },
+            new List<string>() { "Load pos", "F9", "", "f" },
+            new List<string>() { "Save gpos", "F8", "s", "t" },
+            new List<string>() { "Load gpos", "F9", "s", "t" },
+            new List<string>() { "Show colliders", "F10", "", "f" },
+            new List<string>() { "Load visible colliders", "F10", "c", "t" },
+            new List<string>() { "Freecam", "F11", "", "t" },
+            new List<string>() { "Pos history", "P", "", "t" },
+            new List<string>() { "Velocity graph", "Backspace", "", "t" },
+            new List<string>() { "Timescale down", "Insert", "", "t" },
+            new List<string>() { "Timescale up", "PageUp", "", "t" },
+            new List<string>() { "Reset timescale", "Home", "", "t" },
+            new List<string>() { "Rotate cam right", "Delete", "", "t" },
+            new List<string>() { "Rotate cam left", "PageDown", "", "t" },
+            new List<string>() { "Reset cam", "End", "", "t" },
+            new List<string>() { "Mouse tele", "Mouse0", "c", "t" },
+            new List<string>() { "Zoom in", "Minus", "", "t" },
+            new List<string>() { "Zoom out", "Equals", "", "t" },
+            new List<string>() { "Toggle noclip", "U", "", "t" },
+            new List<string>() { "Tele up", "H", "", "t" },
+            new List<string>() { "Tele down", "J", "", "t" },
+            new List<string>() { "Toggle night", "", "", "t" },
+            new List<string>() { "Save file", "S", "c", "t" },
+            new List<string>() { "Reload file", "O", "c", "t" },
+            new List<string>() { "Get gp", "", "", "t" },
+            new List<string>() { "Instant textskip", "", "", "t" },
+   };
+
+        public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
+        public static bool bindMenuOpen = false;
+        public static List<String> bufferedActions = new List<String>();
+
         public static bool hasInit = false;
         public static GUIBox.GUIBox bindMenu;
 
         public static Feature[] featureBoxes;
 
-        public static void init()
+        public static String listeningForKey = "";
+        public static KeyCode foundKey;
+
+        public static void init(ConfigFile Config)
         {
             hasInit = true;
-            var perColumn = Mathf.Floor(DDoorDebugPlugin.features.Length / 3);
-            var leftOver = DDoorDebugPlugin.features.Length - 3 * perColumn;
+            foreach (var feature in GUIMenus.BindMenu.features)
+            {
+                GUIMenus.BindMenu.featureBinds.Add(feature[0], new Bind(
+                            Config.Bind(feature[0], "key/button", feature[1]),
+                            Config.Bind(feature[0], "modifiers", feature[2]),
+                            Config.Bind(feature[0], "allow extra modifiers", feature[3]))
+                        );
+            }
+
+            var perColumn = Mathf.Floor(features.Length / 3);
+            var leftOver = features.Length - 3 * perColumn;
 
             int indexTracker = 0;
             List<Feature> tmpFeatureBoxes = new List<Feature>();
@@ -29,8 +92,9 @@ namespace DDoorDebug.GUIMenus
                 List<GUIBox.HorizontalOptionCategory> optionsInColumn = new List<GUIBox.HorizontalOptionCategory>();
                 for (var b = 0; b < perColumn; b++)
                 {
-                    var f = DDoorDebugPlugin.features[indexTracker];
-                    var nf = new Feature(f[0], "", f[2], f[3] == "t");
+                    var f = features[indexTracker];
+                    Bind fb = (Bind)featureBinds[f[0]];
+                    var nf = new Feature(f[0], fb.keycode.ToString(), fb.modifiers, fb.allowExtraModifiers);
                     tmpFeatureBoxes.Add(nf);
                     optionsInColumn.Add(nf.box);
                     indexTracker++;
@@ -42,7 +106,7 @@ namespace DDoorDebug.GUIMenus
             var leftOverHolder = new List<GUIBox.HorizontalOptionCategory>();
             for (var i = 0; i < leftOver; i++)
             {
-                var f = DDoorDebugPlugin.features[indexTracker];
+                var f = features[indexTracker];
                 var nf = new Feature(f[0], f[1], f[2], f[3] == "t");
                 tmpFeatureBoxes.Add(nf);
                 leftOverHolder.Add(nf.box);
@@ -64,22 +128,89 @@ namespace DDoorDebug.GUIMenus
             for (var i = 0; i < featureBoxes.Length; i++)
             {
                 if (featureBoxes[i] == null) { DDoorDebugPlugin.Log.LogWarning("null!"); continue; }
-                var b = (Bind)DDoorDebugPlugin.featureBinds[DDoorDebugPlugin.features[i][0]];
+                var b = (Bind)featureBinds[features[i][0]];
                 featureBoxes[i].bindButton.SetText(b.keycode.ToString());
             }
         }
 
         public static void OnGUI()
         {
-            if (!hasInit) { init(); }
             if (bindMenu == null) { DDoorDebugPlugin.Log.LogWarning("bind null!"); return; }
             bindMenu.OnGUI();
             for (var i = 0; i < featureBoxes.Length; i++)
             {
                 if (featureBoxes[i] == null) { DDoorDebugPlugin.Log.LogWarning("null!"); continue; }
-                var b = (Bind)DDoorDebugPlugin.featureBinds[DDoorDebugPlugin.features[i][0]];
+                var b = (Bind)featureBinds[features[i][0]];
                 featureBoxes[i].OnGUI(b);
             }
+        }
+
+        public static bool CheckIfPressed(String name)
+        {
+            if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
+            var raw = featureBinds[name];
+            if (!(raw.GetType() == typeof(Bind)))
+            {
+                return false;
+            }
+            var b = (Bind)raw;
+            if (!b.allowExtraModifiers) { return CheckIfPressedNoExtras(b); }
+            if (!Input.GetKeyDown(b.keycode)) { return false; }
+            if (b.modifiers != "")
+            {
+                if (b.modifiers.Contains('s') && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) { return false; }
+                if (b.modifiers.Contains('c') && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) { return false; }
+                if (b.modifiers.Contains('a') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))) { return false; }
+            }
+            return true;
+        }
+
+        public static bool CheckIfPressedNoExtras(Bind b)
+        {
+            return Input.GetKeyDown(b.keycode) && !(b.modifiers.Contains('s') ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && !(b.modifiers.Contains('c') ^ (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && !(b.modifiers.Contains('a') ^ (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
+        }
+
+        public static void listenForKeys()
+        {
+            if (!Input.anyKeyDown || listeningForKey.Length == 0) { return; }
+            foreach (KeyCode k in Enum.GetValues(typeof(KeyCode)))
+            {
+                if (k != KeyCode.None && Input.GetKeyDown(k))
+                {
+                    foundKey = k;
+                    return;
+                }
+            }
+        }
+
+        public static bool CheckIfHeld(String name)
+        {
+            if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
+            var raw = featureBinds[name];
+            if (!(raw.GetType() == typeof(Bind)))
+            {
+                return false;
+            }
+            var b = (Bind)raw;
+            var result = Input.GetKey(b.keycode);
+            if (b.modifiers != "")
+            {
+                if (b.modifiers.Contains('s') && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) { result = false; }
+                if (b.modifiers.Contains('c') && !(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) { result = false; }
+                if (b.modifiers.Contains('a') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))) { result = false; }
+            }
+            return result;
+        }
+
+        public static bool CheckIfModifierHeld(String name)
+        {
+            var raw = featureBinds[name];
+            if (!(raw.GetType() == typeof(Bind)))
+            {
+                return false;
+            }
+            var b = (Bind)raw;
+            return (!b.modifiers.Contains("s") || (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) && (!b.modifiers.Contains("c") || (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) && (!b.modifiers.Contains("a") || (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)));
         }
     }
 
@@ -116,33 +247,33 @@ namespace DDoorDebug.GUIMenus
         {
             if (actionButton.IsPressed())
             {
-                DDoorDebugPlugin.bufferedActions.Add(name);
+                BindMenu.bufferedActions.Add(name);
             }
 
             var bindButtonPressed = bindButton.IsPressed();
-            if (DDoorDebugPlugin.listeningForKey.Length == 0 && bindButtonPressed)
+            if (BindMenu.listeningForKey.Length == 0 && bindButtonPressed)
             {
-                DDoorDebugPlugin.listeningForKey = name;
+                BindMenu.listeningForKey = name;
             }
-            else if (DDoorDebugPlugin.listeningForKey.Length != 0 && DDoorDebugPlugin.listeningForKey != name) { bindButton.SetText(b.keycode.ToString()); }
-            if (DDoorDebugPlugin.listeningForKey == name && DDoorDebugPlugin.foundKey == KeyCode.None && Input.GetKey(KeyCode.Escape) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+            else if (BindMenu.listeningForKey.Length != 0 && BindMenu.listeningForKey != name) { bindButton.SetText(b.keycode.ToString()); }
+            if (BindMenu.listeningForKey == name && BindMenu.foundKey == KeyCode.None && Input.GetKey(KeyCode.Escape) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
             {
                 b.keycode = KeyCode.None;
                 b.keyEntry.BoxedValue = KeyCode.None.ToString();
-                DDoorDebugPlugin.listeningForKey = "";
-                DDoorDebugPlugin.foundKey = KeyCode.None;
+                BindMenu.listeningForKey = "";
+                BindMenu.foundKey = KeyCode.None;
             }
-            else if (DDoorDebugPlugin.listeningForKey == name && DDoorDebugPlugin.foundKey == KeyCode.None)
+            else if (BindMenu.listeningForKey == name && BindMenu.foundKey == KeyCode.None)
             {
                 bindButton.SetText("Waiting...");
             }
-            if (DDoorDebugPlugin.listeningForKey == name && DDoorDebugPlugin.foundKey != KeyCode.None)
+            if (BindMenu.listeningForKey == name && BindMenu.foundKey != KeyCode.None)
             {
-                b.keycode = DDoorDebugPlugin.foundKey;
-                b.keyEntry.BoxedValue = DDoorDebugPlugin.foundKey.ToString();
-                bindButton.SetText(DDoorDebugPlugin.foundKey.ToString());
-                DDoorDebugPlugin.listeningForKey = "";
-                DDoorDebugPlugin.foundKey = KeyCode.None;
+                b.keycode = BindMenu.foundKey;
+                b.keyEntry.BoxedValue = BindMenu.foundKey.ToString();
+                bindButton.SetText(BindMenu.foundKey.ToString());
+                BindMenu.listeningForKey = "";
+                BindMenu.foundKey = KeyCode.None;
             }
 
             var modifiers = b.modifiers;
@@ -204,15 +335,17 @@ namespace DDoorDebug.GUIMenus
                 b.allowExtraModifiers = !b.allowExtraModifiers;
                 if (newState)
                 {
+                    b.allowExtraModifiers = true;
                     b.extraEntry.BoxedValue = "t";
                 }
                 else
                 {
+                    b.allowExtraModifiers = false;
                     b.extraEntry.BoxedValue = "f";
                 }
             }
 
-            DDoorDebugPlugin.featureBinds[name] = b;
+            BindMenu.featureBinds[name] = b;
         }
     }
 }
