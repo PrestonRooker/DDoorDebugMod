@@ -998,7 +998,7 @@ namespace DDoorDebug
                 }
             }
 
-            if (CheckIfPressed("Toggle Timestop"))
+            if (GUIMenus.BindMenu.CheckIfPressed("Toggle Timestop"))
             {
                 if (PlayerGlobal.instance.IsInputPausedCutscene() || PlayerGlobal.instance.IsInputPausedTalk())
                 {

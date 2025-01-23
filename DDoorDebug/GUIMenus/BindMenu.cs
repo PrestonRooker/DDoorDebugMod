@@ -55,6 +55,7 @@ namespace DDoorDebug.GUIMenus
             new List<string>() { "Reload file", "O", "c", "t" },
             new List<string>() { "Get gp", "", "", "t" },
             new List<string>() { "Instant textskip", "", "", "t" },
+            new List<string>() { "Toggle Timestop", "", "", "t" },
    };
 
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
@@ -149,6 +150,7 @@ namespace DDoorDebug.GUIMenus
         {
             if (bufferedActions.Contains(name)) { bufferedActions.Remove(name); return true; }
             var raw = featureBinds[name];
+            if (raw == null) { return false; }
             if (!(raw.GetType() == typeof(Bind)))
             {
                 return false;
@@ -173,6 +175,7 @@ namespace DDoorDebug.GUIMenus
         public static void listenForKeys()
         {
             if (!Input.anyKeyDown || listeningForKey.Length == 0) { return; }
+            DDoorDebug.DDoorDebugPlugin.Log.LogWarning("key!");
             foreach (KeyCode k in Enum.GetValues(typeof(KeyCode)))
             {
                 if (k != KeyCode.None && Input.GetKeyDown(k))
