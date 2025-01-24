@@ -9,8 +9,8 @@ The mod can be installed through the raven mod installer https://github.com/dpin
 ## Manual Installation
 Make sure you have an appropriate bepinex version installed with your game.
 
-Download the DDoorDebug4.8.dll file from the latest release: https://github.com/PrestonRooker/DDoorDebugMod/releases  
-Put the file in game/BepInEx/plugins.  
+Download the DDoorDebug4.8.dll and wfshader.bundle files from the latest release: https://github.com/PrestonRooker/DDoorDebugMod/releases  
+Put the files in game/BepInEx/plugins.  
 If you are playing on 1.0 or this version doesn't happen to work, you should use the 4.5.2 version.  
 
 ## Usage
