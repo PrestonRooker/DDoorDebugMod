@@ -69,6 +69,7 @@ namespace DDoorDebug
         public static float baseZoom = 1f; //zoom reset
         public static bool infMagic = false; //inf magic
         public static bool justReloaded = false; //used for reload file
+        public static bool frameAdvance = false; //used for frame advance
         public static Dictionary<string, int> spellDic = new Dictionary<string, int>() //for reload file spell fix
         {
             { "arrow", 1 },
@@ -418,7 +419,11 @@ namespace DDoorDebug
             DData.allScenes = scenes.OrderByDescending(x => x).ToArray();
         }
 
-        private void FixedUpdate() => SamplePositionHistory();
+        private void FixedUpdate()
+        {
+            SamplePositionHistory();
+            AdvanceNextFrame();
+        }
 
         private void Update()
         {
@@ -428,6 +433,31 @@ namespace DDoorDebug
             DrawLine();
             DrawMeshColliders();
             GUIMenus.BindMenu.listenForKeys();
+        }
+
+        private void ToggleFrameAdvance()
+        {
+            if (frameAdvance)
+            {
+                Time.timeScale = timescale;
+                frameAdvance = false;
+            }
+            else
+            {
+                Time.timeScale = 0f;
+                frameAdvance = true;
+            }
+        }
+
+        private void AdvanceNextFrame()
+        {
+            if (frameAdvance)
+            {
+                if (Time.timeScale >= 0.24f)
+                {
+                    Time.timeScale = 0f;
+                }
+            }
         }
 
         // We could rewrite it to be generic but who cares
@@ -908,7 +938,7 @@ namespace DDoorDebug
             {
                 wasSlow = true;
             }
-            if (wasSlow && Time.timeScale > 0.24)
+            if (wasSlow && Time.timeScale > 0.24f)
             {
                 wasSlow = false;
                 Time.timeScale = timescale;
@@ -1182,6 +1212,19 @@ namespace DDoorDebug
                 {
                     c.enabled = false;
                     c.enabled = true;
+                }
+            }
+
+            if (GUIMenus.BindMenu.CheckIfPressed("Toggle time"))
+            {
+                ToggleFrameAdvance();
+            }
+
+            if (GUIMenus.BindMenu.CheckIfPressed("Frame advance"))
+            {
+                if (frameAdvance)
+                {
+                    Time.timeScale = 1f;
                 }
             }
         }

@@ -56,6 +56,8 @@ namespace DDoorDebug.GUIMenus
             new List<string>() { "Get gp", "", "", "t" },
             new List<string>() { "Instant textskip", "", "", "t" },
             new List<string>() { "Toggle Timestop", "", "", "t" },
+            new List<string>() { "Toggle time", "", "", "t" },
+            new List<string>() { "Frame advance", "", "", "t" }
    };
 
         public static Hashtable featureBinds = new Hashtable(); // { "name in config file", "bind" }
