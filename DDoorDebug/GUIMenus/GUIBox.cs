@@ -39,7 +39,7 @@ namespace GUIBox
 
             GUI.color = prevColor;
 
-            contents.OnGUI(topLeftCorner, 0.003f, 20);
+            contents.OnGUI(topLeftCorner, 0.003f, 16);
             GUI.skin.label.clipping = prevClip;
         }
 
@@ -128,6 +128,7 @@ namespace GUIBox
 
         public float lastFontSize = 0;
         public Vector2 textSize;
+        public float lastResolution = 0;
 
         public ButtonOption(string text, float emptySpaceMultiplier = 1.5f, float? overrideWidth = null, float? overrideHeight = null)
         {
@@ -135,8 +136,8 @@ namespace GUIBox
             height = 0;
             this.text = text;
             this.emptySpaceMultiplier = emptySpaceMultiplier;
-            this.overrideWidth = overrideWidth * Screen.width;
-            this.overrideHeight = overrideHeight * Screen.height;
+            this.overrideWidth = overrideWidth;
+            this.overrideHeight = overrideHeight;
         }
 
         public bool IsPressed()
@@ -151,14 +152,20 @@ namespace GUIBox
 
         public override Vector2 Update(Vector2 startCorner, int fontSize)
         {
-            if (fontSize != lastFontSize)
+            if (fontSize != lastFontSize || lastResolution != Screen.height)
             {
                 lastFontSize = fontSize;
+                lastResolution = Screen.height;
                 UpdateTextSize(fontSize);
             }
 
-            width = overrideWidth == null ? textSize.x * emptySpaceMultiplier : overrideWidth.Value;
-            height = overrideHeight == null ? textSize.y * emptySpaceMultiplier : overrideHeight.Value;
+            width = overrideWidth == null
+                ? textSize.x * emptySpaceMultiplier
+                : overrideWidth.Value * Screen.width;
+
+            height = overrideHeight == null
+                ? textSize.y * emptySpaceMultiplier
+                : overrideHeight.Value * Screen.height;
 
             var rect = new Rect(startCorner.x, startCorner.y, width, height);
             if (GUI.Button(rect, text, GUI.skin.button))
@@ -205,6 +212,7 @@ namespace GUIBox
 
         public float lastFontSize = 0;
         public Vector2 textSize;
+        public float lastResolution = 0;
 
         public ToggleOption(string text, bool initialState = false, bool isButton = false, float buttonEmptySpaceMultiplier = 1.5f, float? overrideButtonWidth = null, float? overrideButtonHeight = null)
         {
@@ -214,8 +222,8 @@ namespace GUIBox
             state = initialState;
             button = isButton; //looks like button instead of the default checkbox
             this.emptySpaceMultiplier = buttonEmptySpaceMultiplier;
-            this.overrideWidth = overrideButtonWidth * Screen.width;
-            this.overrideHeight = overrideHeight * Screen.height;
+            this.overrideWidth = overrideButtonWidth;
+            this.overrideHeight = overrideButtonHeight;
         }
 
         public bool GetState()
@@ -225,9 +233,10 @@ namespace GUIBox
 
         public override Vector2 Update(Vector2 startCorner, int fontSize)
         {
-            if (fontSize != lastFontSize)
+            if (fontSize != lastFontSize || lastResolution != Screen.height)
             {
                 lastFontSize = fontSize;
+                lastResolution = Screen.height;
                 UpdateTextSize(fontSize);
             }
 
@@ -249,8 +258,13 @@ namespace GUIBox
             }
             else
             {
-                width = overrideWidth == null ? textSize.x * emptySpaceMultiplier : overrideWidth.Value;
-                height = overrideHeight == null ? textSize.y * emptySpaceMultiplier : overrideHeight.Value;
+                width = overrideWidth == null
+                    ? textSize.x * emptySpaceMultiplier
+                    : overrideWidth.Value * Screen.width;
+
+                height = overrideHeight == null
+                    ? textSize.y * emptySpaceMultiplier
+                    : overrideHeight.Value * Screen.height;
 
                 var rect = new Rect(startCorner.x, startCorner.y, width, height);
 
@@ -291,14 +305,15 @@ namespace GUIBox
 
         public float lastFontSize = 0;
         public Vector2 textSize;
+        public float lastResolution = 0;
 
         public TextFieldOption(float width, string text = "", float? overrideHeight = null, string initialState = "")
         {
             this.text = text;
-            this.width = width * Screen.width;
+            this.width = width;
             height = 0;
             state = initialState;
-            this.overrideHeight = overrideHeight * Screen.height;
+            this.overrideHeight = overrideHeight;
         }
 
         public string GetState()
@@ -308,21 +323,22 @@ namespace GUIBox
 
         public override Vector2 Update(Vector2 startCorner, int fontSize)
         {
-            if (fontSize != lastFontSize)
+            if (fontSize != lastFontSize || lastResolution != Screen.height)
             {
                 lastFontSize = fontSize;
+                lastResolution = Screen.height;
                 UpdateTextSize(fontSize);
             }
 
-            height = overrideHeight == null ? fontSize * 1.5f : overrideHeight.Value;
+            height = overrideHeight == null ? fontSize * 1.5f : overrideHeight.Value * Screen.height;
 
             var textRect = new Rect(startCorner.x, startCorner.y, textSize.x, height);
             GUI.Label(textRect, text, GUI.skin.label);
 
-            var fieldRect = new Rect(textRect.xMax, startCorner.y, width, height);
+            var fieldRect = new Rect(textRect.xMax, startCorner.y, width * Screen.width, height);
             state = GUI.TextField(fieldRect, state, GUI.skin.textField);
 
-            return new Vector2(width, height);
+            return new Vector2(width * Screen.width, height);
         }
 
         public override float GetHeight()
@@ -356,14 +372,15 @@ namespace GUIBox
 
         public float lastFontSize = 0;
         public Vector2 textSize;
+        public float lastResolution = 0;
 
         public NumberFieldOption(float width, string text = "", float? overrideHeight = null, int initialState = 0)
         {
             this.text = text;
-            this.width = width * Screen.width;
+            this.width = width;
             height = 0;
             state = initialState;
-            this.overrideHeight = overrideHeight * Screen.height;
+            this.overrideHeight = overrideHeight;
         }
 
         public int GetState()
@@ -373,18 +390,19 @@ namespace GUIBox
 
         public override Vector2 Update(Vector2 startCorner, int fontSize)
         {
-            if (fontSize != lastFontSize)
+            if (fontSize != lastFontSize || lastResolution != Screen.height)
             {
                 lastFontSize = fontSize;
+                lastResolution = Screen.height;
                 UpdateTextSize(fontSize);
             }
 
-            height = overrideHeight == null ? fontSize * 1.5f : overrideHeight.Value;
+            height = overrideHeight == null ? fontSize * 1.5f : overrideHeight.Value * Screen.height;
 
             var textRect = new Rect(startCorner.x, startCorner.y, textSize.x, height);
             GUI.Label(textRect, text, GUI.skin.label);
 
-            var fieldRect = new Rect(textRect.xMax, startCorner.y, width, height);
+            var fieldRect = new Rect(textRect.xMax, startCorner.y, width * Screen.width, height);
             string newState;
             if (state != 0)
             {
@@ -402,7 +420,7 @@ namespace GUIBox
             {
                 state = 0;
             }
-            return new Vector2(width, height);
+            return new Vector2(width * Screen.width, height);
         }
 
         public override float GetHeight()
@@ -444,8 +462,8 @@ namespace GUIBox
             height = 0;
             state = initialState;
 
-            this.overrideWidth = overrideWidth * Screen.width;
-            this.overrideHeight = overrideHeight * Screen.height;
+            this.overrideWidth = overrideWidth;
+            this.overrideHeight = overrideHeight;
         }
 
         public int GetState()
@@ -470,8 +488,8 @@ namespace GUIBox
                 }
             }
 
-            width = overrideWidth == null ? biggestX * emptySpaceMultiplier : overrideWidth.Value;
-            height = overrideHeight == null ? biggestY * emptySpaceMultiplier * 1.2f : overrideHeight.Value;
+            width = overrideWidth == null ? biggestX * emptySpaceMultiplier : overrideWidth.Value * Screen.width;
+            height = overrideHeight == null ? biggestY * emptySpaceMultiplier * 1.2f : overrideHeight.Value * Screen.height;
 
             var rect = new Rect(startCorner.x, startCorner.y, width, height * texts.Count());
             state = GUI.SelectionGrid(rect, state, texts, 1, GUI.skin.button);
@@ -714,7 +732,7 @@ namespace GUIBox
                 {
                     DDoorDebug.DDoorDebugPlugin.Log.LogWarning(nc.ToString() + " " + updatingCorner.ToString()); //debug
                 }
-                
+
             }
             if (subCategories.Length > 0) { updatingCorner.x -= gap * Screen.width; }
             GUIBox.ChangeFontSize(12);
