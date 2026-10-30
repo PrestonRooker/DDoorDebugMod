@@ -25,13 +25,13 @@ namespace DDoorDebug
     public class DDoorDebugPlugin : BaseUnityPlugin
     {
         const string NAME = "DDoorDebugPlugin";
-        const string VERSION = "0.3.6";
+        const string VERSION = "0.3.7";
         const string GUID = "org.bepinex.plugins.ddoordebugkz";
         //-
         public static DDoorDebugPlugin instance { get; private set; }
-        public DDoorDebugData DData  { get; private set;}
-        public PluginOptions Options { get; private set;}
-        public PluginCache Cache { get; private set;}
+        public DDoorDebugData DData { get; private set; }
+        public PluginOptions Options { get; private set; }
+        public PluginCache Cache { get; private set; }
         private readonly MutableString builder = new MutableString(600, true);
 
         // GUI
@@ -98,7 +98,7 @@ namespace DDoorDebug
         }
 
         private void PrepareGUI()
-		{
+        {
             Camera.onPostRender += OnPostRenderCallback;
             SetMatrix(Screen.width, Screen.height);
             GLinesMaterial = new Material(Shader.Find("Hidden/Internal-Colored")) { hideFlags = HideFlags.HideAndDontSave };
@@ -112,7 +112,7 @@ namespace DDoorDebug
             CopyMesh(GameObject.CreatePrimitive(PrimitiveType.Sphere), ref Cache.sphereMesh);
             //CopyMesh(GameObject.CreatePrimitive(PrimitiveType.Cube), ref Cache.boxMesh);
             abundle.Unload(false);
-		}
+        }
 
         private void CopyMesh(GameObject original, ref Mesh target)
         {
@@ -135,8 +135,8 @@ namespace DDoorDebug
             for (int i = 0; i < rawColliders.Length; i++)
             {
                 var hitCollider = rawColliders[i] as Collider;
-                if (hitCollider && GeometryUtility.TestPlanesAABB(planes , hitCollider.bounds))
-                    //&& Globals.instance.solidLayers == (Globals.instance.solidLayers | (1 << hitCollider.gameObject.layer)))
+                if (hitCollider && GeometryUtility.TestPlanesAABB(planes, hitCollider.bounds))
+                //&& Globals.instance.solidLayers == (Globals.instance.solidLayers | (1 << hitCollider.gameObject.layer)))
                 {
                     if (hitCollider is BoxCollider box)
                         Cache.boxData.Add(box);
@@ -151,93 +151,93 @@ namespace DDoorDebug
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Mesh GenerateCapsule(float height, float radius, CapsuleCollider capsule, int segments = 24) 
-	    {
+        private Mesh GenerateCapsule(float height, float radius, CapsuleCollider capsule, int segments = 24)
+        {
             //calculate exact size sowe dont do anys caling later
             radius = radius * Mathf.Max(Mathf.Abs(capsule.transform.lossyScale.x), Mathf.Abs(capsule.transform.lossyScale.x));
-		    height = height * capsule.transform.lossyScale.y;
+            height = height * capsule.transform.lossyScale.y;
 
-		    if (segments % 2 != 0)
-                segments ++;
-		
-		    // extra vertex on the seam
-		    int points = segments + 1;
-		
-		    // calculate points around a circle
-		    float[] pX = new float[points];
-		    float[] pZ = new float[points];
-		    float[] pY = new float[points];
-		    float[] pR = new float[points];
-		
-		    float calcH = 0f;
-		    float calcV = 0f;
-		
-		    for ( int i = 0; i < points; i ++ )
-		    {
-			    pX[i] = Mathf.Sin(calcH * Mathf.Deg2Rad); 
-			    pZ[i] = Mathf.Cos(calcH * Mathf.Deg2Rad);
-			    pY[i] = Mathf.Cos(calcV * Mathf.Deg2Rad); 
-			    pR[i] = Mathf.Sin(calcV * Mathf.Deg2Rad); 
-			    calcH += 360f / (float)segments;
-			    calcV += 180f / (float)segments;
-		    }
+            if (segments % 2 != 0)
+                segments++;
 
-		    Vector3[] vertices = new Vector3[points * (points + 1)];
-		    int ind = 0;
-		
-		    // Y-offset is half the height minus the diameter
-		    float yOff = (height - (radius * 2f)) * 0.5f;
-		    if (yOff < 0)
-			    yOff = 0;
-		
-		    // Top Hemisphere
-		    int top = Mathf.CeilToInt((float)points * 0.5f);
-		    for (int y = 0; y < top; y++) 
-		    {
-			    for (int x = 0; x < points; x++) 
-			    {
-				    vertices[ind] = new Vector3(pX[x] * pR[y], pY[y], pZ[x] * pR[y]) * radius;
-				    vertices[ind].y = yOff + vertices[ind].y;
-				    ind ++;
-			    }
-		    }
-		
-		    // Bottom Hemisphere
-		    int btm = Mathf.FloorToInt((float)points * 0.5f);
-		
-		    for (int y = btm; y < points; y++) 
-		    {
-			    for (int x = 0; x < points; x++) 
-			    {
-				    vertices[ind] = new Vector3(pX[x] * pR[y], pY[y], pZ[x] * pR[y]) * radius;
-				    vertices[ind].y = -yOff + vertices[ind].y;
-				    ind ++;
-			    }
-		    }
-		    // - Triangles -
-		    int[] triangles = new int[(segments * (segments + 1) * 2 * 3 )];
-		
-		    for (int y = 0, t = 0; y < segments + 1; y ++) 
-		    {
-			    for (int x = 0; x < segments; x ++, t += 6) 
-			    {
-				    triangles[t + 0] = ((y + 0) * (segments + 1)) + x + 0;
-				    triangles[t + 1] = ((y + 1) * (segments + 1)) + x + 0;
-				    triangles[t + 2] = ((y + 1) * (segments + 1)) + x + 1;
-				    triangles[t + 3] = ((y + 0) * (segments + 1)) + x + 1;
-				    triangles[t + 4] = ((y + 0) * (segments + 1)) + x + 0;
-				    triangles[t + 5] = ((y + 1) * (segments + 1)) + x + 1;
-			    }
-		    }
+            // extra vertex on the seam
+            int points = segments + 1;
+
+            // calculate points around a circle
+            float[] pX = new float[points];
+            float[] pZ = new float[points];
+            float[] pY = new float[points];
+            float[] pR = new float[points];
+
+            float calcH = 0f;
+            float calcV = 0f;
+
+            for (int i = 0; i < points; i++)
+            {
+                pX[i] = Mathf.Sin(calcH * Mathf.Deg2Rad);
+                pZ[i] = Mathf.Cos(calcH * Mathf.Deg2Rad);
+                pY[i] = Mathf.Cos(calcV * Mathf.Deg2Rad);
+                pR[i] = Mathf.Sin(calcV * Mathf.Deg2Rad);
+                calcH += 360f / (float)segments;
+                calcV += 180f / (float)segments;
+            }
+
+            Vector3[] vertices = new Vector3[points * (points + 1)];
+            int ind = 0;
+
+            // Y-offset is half the height minus the diameter
+            float yOff = (height - (radius * 2f)) * 0.5f;
+            if (yOff < 0)
+                yOff = 0;
+
+            // Top Hemisphere
+            int top = Mathf.CeilToInt((float)points * 0.5f);
+            for (int y = 0; y < top; y++)
+            {
+                for (int x = 0; x < points; x++)
+                {
+                    vertices[ind] = new Vector3(pX[x] * pR[y], pY[y], pZ[x] * pR[y]) * radius;
+                    vertices[ind].y = yOff + vertices[ind].y;
+                    ind++;
+                }
+            }
+
+            // Bottom Hemisphere
+            int btm = Mathf.FloorToInt((float)points * 0.5f);
+
+            for (int y = btm; y < points; y++)
+            {
+                for (int x = 0; x < points; x++)
+                {
+                    vertices[ind] = new Vector3(pX[x] * pR[y], pY[y], pZ[x] * pR[y]) * radius;
+                    vertices[ind].y = -yOff + vertices[ind].y;
+                    ind++;
+                }
+            }
+            // - Triangles -
+            int[] triangles = new int[(segments * (segments + 1) * 2 * 3)];
+
+            for (int y = 0, t = 0; y < segments + 1; y++)
+            {
+                for (int x = 0; x < segments; x++, t += 6)
+                {
+                    triangles[t + 0] = ((y + 0) * (segments + 1)) + x + 0;
+                    triangles[t + 1] = ((y + 1) * (segments + 1)) + x + 0;
+                    triangles[t + 2] = ((y + 1) * (segments + 1)) + x + 1;
+                    triangles[t + 3] = ((y + 0) * (segments + 1)) + x + 1;
+                    triangles[t + 4] = ((y + 0) * (segments + 1)) + x + 0;
+                    triangles[t + 5] = ((y + 1) * (segments + 1)) + x + 1;
+                }
+            }
             // We could pool meshes but who cares.	
             Mesh mesh = new Mesh();
-		    mesh.vertices = vertices;
-		    mesh.triangles = triangles;
-		    mesh.RecalculateBounds();
-		    mesh.RecalculateNormals();
-		    mesh.Optimize();
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+            mesh.Optimize();
             return mesh;
-	    }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void GLDrawBoxCollider(in BoxCollider box)
@@ -279,7 +279,7 @@ namespace DDoorDebug
 
         private void OnPostRenderCallback(Camera cam)
         {
-           if (!CanRender() || cam != Cache.mainCam)
+            if (!CanRender() || cam != Cache.mainCam)
                 return;
 
             // We draw box colliders via GL.Lines because we need quad-like representation
@@ -291,7 +291,7 @@ namespace DDoorDebug
                 GL.MultMatrix(Matrix4x4.identity);
                 GL.Begin(GL.LINES);
                 for (int i = Cache.boxData.Count - 1; i >= 0; i--)
-                {   
+                {
                     Color line = Color.red;
                     var box = Cache.boxData[i];
                     if (box == null)
@@ -319,9 +319,9 @@ namespace DDoorDebug
                 GL.Color(Color.yellow);
                 foreach (var pos in DData.posHistSamples)
                 {
-                    GL.Vertex(pos + new Vector3(0,2.5f,0));
-                    GL.Vertex(pos + new Vector3(0,-2f,0));
-                    GL.Vertex(pos + new Vector3(0,2.5f,0));
+                    GL.Vertex(pos + new Vector3(0, 2.5f, 0));
+                    GL.Vertex(pos + new Vector3(0, -2f, 0));
+                    GL.Vertex(pos + new Vector3(0, 2.5f, 0));
                 }
                 GL.End();
                 GL.PopMatrix();
@@ -357,10 +357,10 @@ namespace DDoorDebug
             GL.LoadPixelMatrix();
             GL.Begin(GL.QUADS);
             GL.Color(new Color(0f, 0f, 0f, 0.45f)); //black
-            var leftX  = FitX(Options.graphPosGL.x);
-            var botY   = FitY(Options.graphPosGL.y);
+            var leftX = FitX(Options.graphPosGL.x);
+            var botY = FitY(Options.graphPosGL.y);
             var rightX = FitX(Options.graphPosGL.x + PluginOptions.graphWidth);
-            var topY   = FitY(Options.graphPosGL.y + PluginOptions.graphHeight);
+            var topY = FitY(Options.graphPosGL.y + PluginOptions.graphHeight);
             GL.Vertex3(leftX, botY, 0);
             GL.Vertex3(rightX, botY, 0);
             GL.Vertex3(rightX, topY, 0);
@@ -374,7 +374,7 @@ namespace DDoorDebug
             for (int i = 1; i < 10; i++)
             {
                 GL.Vertex(new Vector3(FitX(start.x), FitY(start.y + (i * 10f)), 0f));
-                GL.Vertex(new Vector3(FitX(start.x+330f), FitY(start.y + (i * 10f)), 0f));
+                GL.Vertex(new Vector3(FitX(start.x + 330f), FitY(start.y + (i * 10f)), 0f));
             }
             // Plot line
             GL.Color(Color.cyan);
@@ -384,11 +384,11 @@ namespace DDoorDebug
             foreach (var speed in DData.velSamples)
             {
                 vel = Mathf.Min(speed, 100f);
-                var end = new Vector3(FitX(Options.graphPosGL.x + (step * (c+1))), FitY(Options.graphPosGL.y + vel), 0);
+                var end = new Vector3(FitX(Options.graphPosGL.x + (step * (c + 1))), FitY(Options.graphPosGL.y + vel), 0);
                 for (int j = 0; j < Options.velLineWidth; j++)
                 {
-                    GL.Vertex(start+new Vector3(0,0+j,0));
-                    GL.Vertex(end+new Vector3(0,0+j,0));
+                    GL.Vertex(start + new Vector3(0, 0 + j, 0));
+                    GL.Vertex(end + new Vector3(0, 0 + j, 0));
                 }
                 start = end;
                 c++;
@@ -398,7 +398,7 @@ namespace DDoorDebug
         }
 
         private void PopulateDData()
-		{
+        {
             // Switch would be faster but we dont want to fix it manually each update if new value added
             DData.dmgTypes = new Dictionary<int, string>(13);
             foreach (DamageType val in Enum.GetValues(typeof(DamageType)))
@@ -416,7 +416,7 @@ namespace DDoorDebug
                     scenes.Add(scene);
             }
             DData.allScenes = scenes.OrderByDescending(x => x).ToArray();
-		}
+        }
 
         private void FixedUpdate() => SamplePositionHistory();
 
@@ -523,11 +523,11 @@ namespace DDoorDebug
         private void DrawLine()
         {
             if (!Cache.lineRenderer || !Cache.lineRenderer.enabled) return;
-            var playerPos = Cache.lineRenderer.transform.position + new Vector3(0f,2.5f,0f);
+            var playerPos = Cache.lineRenderer.transform.position + new Vector3(0f, 2.5f, 0f);
             Vector3 end = playerPos - (Cache.lineRenderer.transform.forward * -50f);
             Cache.lineCache[0] = playerPos;
             Cache.lineCache[1] = end;
-			Cache.lineRenderer.SetPositions(Cache.lineCache);
+            Cache.lineRenderer.SetPositions(Cache.lineCache);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -551,7 +551,7 @@ namespace DDoorDebug
             {
                 UIArrowChargeBar.instance.GainCharge(8);
             }
-        }      
+        }
 
         private void OnGUI()
         {
@@ -577,7 +577,7 @@ namespace DDoorDebug
                 GUI.skin.box.fontSize = 20;
                 GUI.skin.box.fontStyle = FontStyle.Bold;
                 GUI.skin.box.alignment = TextAnchor.UpperLeft;
-                var box = new Rect(1920f-10f-PluginOptions.guiInfoWidth, 10f, PluginOptions.guiInfoWidth, 550f);
+                var box = new Rect(1920f - 10f - PluginOptions.guiInfoWidth, 10f, PluginOptions.guiInfoWidth, 550f);
                 GUI.Box(box, guiOutputStr);
                 if (Options.velGraphEnabled)
                 {
@@ -615,7 +615,13 @@ namespace DDoorDebug
             {
                 UI_Control.HideUI();
                 Cursor.visible = true;
+
+                Matrix4x4 previousMatrix = GUI.matrix;
+                GUI.matrix = Matrix4x4.identity;
+
                 GUIMenus.BindMenu.OnGUI();
+
+                GUI.matrix = previousMatrix;
             }
 
             if (UIMenuPauseController.instance.IsPaused())
@@ -637,12 +643,12 @@ namespace DDoorDebug
                 }
                 if (GUI.Button(new Rect(box.x + box.width / 2 + 3f, box.yMax - 3f - 35f, 25f, 30f), "<color=blue>-</color>"))
                 {
-                    if (Inventory.instance.GetItemCount(statName) > 0 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }       
+                    if (Inventory.instance.GetItemCount(statName) > 0 || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) { Inventory.instance.SetItemCount(statName, Inventory.instance.GetItemCount(statName) - 1); }
                     else { Inventory.instance.SetItemCount(statName, 5); }
-                    Inventory.instance.AddItem("stat_melee", 0);            
-                    Inventory.instance.AddItem("stat_dexterity", 0);            
-                    Inventory.instance.AddItem("stat_haste", 0);            
-                    Inventory.instance.AddItem("stat_magic", 0);            
+                    Inventory.instance.AddItem("stat_melee", 0);
+                    Inventory.instance.AddItem("stat_dexterity", 0);
+                    Inventory.instance.AddItem("stat_haste", 0);
+                    Inventory.instance.AddItem("stat_magic", 0);
                 }
                 GUI.Label(new Rect(box.xMax - 15f, box.y + 3f, 10f, 30f), Inventory.instance.GetItemCount(statNames[0]).ToString());
                 GUI.Label(new Rect(box.xMax - 15f, box.y + 33f, 10f, 30f), Inventory.instance.GetItemCount(statNames[1]).ToString());
@@ -683,15 +689,15 @@ namespace DDoorDebug
                     }
                 }
             }
-             GUI.skin.label.fontSize = lFont;
-             GUI.skin.label.fontStyle = lStyle;
-             GUI.skin.label.alignment = lAlign;
-             GUI.skin.label.padding = lPadding;
-             GUI.skin.box.fontSize = bFont;
-             GUI.skin.box.fontStyle = bStyle;
-             GUI.skin.box.alignment = bAlign;
-             GUI.skin.box.padding = bPadding;
-             GUI.skin.button.wordWrap = oldWrap;
+            GUI.skin.label.fontSize = lFont;
+            GUI.skin.label.fontStyle = lStyle;
+            GUI.skin.label.alignment = lAlign;
+            GUI.skin.label.padding = lPadding;
+            GUI.skin.box.fontSize = bFont;
+            GUI.skin.box.fontStyle = bStyle;
+            GUI.skin.box.alignment = bAlign;
+            GUI.skin.box.padding = bPadding;
+            GUI.skin.button.wordWrap = oldWrap;
         }
 
         private void SampleData()
@@ -839,7 +845,7 @@ namespace DDoorDebug
             }
             if (GUIMenus.BindMenu.CheckIfPressed("Load pos"))
             {
-                if (savePosDic.ContainsKey(DData.curActiveScene.GetHashCode())) 
+                if (savePosDic.ContainsKey(DData.curActiveScene.GetHashCode()))
                 {
                     PlayerGlobal.instance.SetPosition(savePosDic[DData.curActiveScene.GetHashCode()], false, false);
                 }
@@ -847,15 +853,15 @@ namespace DDoorDebug
 
             if (GUIMenus.BindMenu.CheckIfPressed("Load gpos"))
             {
-				if (DData.lastCheckPoint.pos != null)
-				{
-                	PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
-				}
+                if (DData.lastCheckPoint.pos != null)
+                {
+                    PlayerGlobal.instance.SetPosition(DData.lastCheckPoint.pos, false, false);
+                }
             }
-			if (GUIMenus.BindMenu.CheckIfPressed("Save gpos"))
-			{
-				DData.lastCheckPoint.pos = PlayerGlobal.instance.transform.position;
-			}
+            if (GUIMenus.BindMenu.CheckIfPressed("Save gpos"))
+            {
+                DData.lastCheckPoint.pos = PlayerGlobal.instance.transform.position;
+            }
 
             if (GUIMenus.BindMenu.CheckIfPressed("Show colliders"))
             {
@@ -920,7 +926,7 @@ namespace DDoorDebug
             if (!UIMenuPauseController.instance.IsPaused() && Time.timeScale != timescale && !wasSlow)
             {
                 timescale = Time.timeScale;
-            }        
+            }
 
             Buttons.PauseInput(GUIMenus.BindMenu.CheckIfModifierHeld("Mouse tele"));
             if (GUIMenus.BindMenu.CheckIfPressed("Mouse tele") && PlayerGlobal.instance != null && !PlayerGlobal.instance.InputPaused())
@@ -933,7 +939,7 @@ namespace DDoorDebug
                 CameraRotationControl.instance.Rotate(currAngle, 1000);
                 isTurning = true;
             }
-            
+
             if (!GUIMenus.BindMenu.CheckIfHeld("Rotate cam right") && CameraRotationControl.instance && isTurning)
             {
                 isTurning = false;
@@ -970,9 +976,9 @@ namespace DDoorDebug
             {
                 skipcs = true;
             }
-			else if (!GUIMenus.BindMenu.CheckIfHeld("Instant textskip"))
+            else if (!GUIMenus.BindMenu.CheckIfHeld("Instant textskip"))
             {
-				skipcs = false;
+                skipcs = false;
             }
 
             if ((skipcs && !inputwaspaused) || inputwaspaused)
@@ -987,8 +993,8 @@ namespace DDoorDebug
                     }
                 }
                 if (PlayerGlobal.instance.InputPaused())
-                { 
-                    inputwaspaused = true; 
+                {
+                    inputwaspaused = true;
                 }
                 if (inputwaspaused && !PlayerGlobal.instance.InputPaused())
                 {
@@ -1163,10 +1169,10 @@ namespace DDoorDebug
             if (GUIMenus.BindMenu.CheckIfPressed("Save file"))
             {
                 if (!(GameSave.GetSaveData().GetSpawnScene() == SceneManager.GetActiveScene().name))
-                { 
+                {
                     GameSave.GetSaveData().SetSpawnPoint(SceneManager.GetActiveScene().name, null);
-                }      
-                GameSave.GetSaveData().Save();     
+                }
+                GameSave.GetSaveData().Save();
             }
 
             if (GUIMenus.BindMenu.CheckIfPressed("Get gp"))
@@ -1214,7 +1220,7 @@ namespace DDoorDebug
                 finalDmg *= 1.5f;
                 modifier *= 1.5f;
             }
-	        str.Append(name).Append(finalDmg,2).Append(" (").Append(wpn.baseDamage, 2).Append("*").Append(modifier)
+            str.Append(name).Append(finalDmg, 2).Append(" (").Append(wpn.baseDamage, 2).Append("*").Append(modifier)
                    .Append(")").Append(" [").Append(dmgType).Append("]");
         }
 
@@ -1231,25 +1237,25 @@ namespace DDoorDebug
             {
                 var c = Physics.RaycastNonAlloc(ray, Cache.hitsCache, 5000f, Globals.instance.solidLayers);
                 Vector3 pos = Vector3.zero;
-		        bool found = false;
-		        float maxDistance = 999999f;
-		        for (int i = 0; i < c; i++)
-		        {
-			        if (Cache.hitsCache[i].collider != null && GameRoom.currentRoom.PointInsideRoom(Cache.hitsCache[i].point))
-			        {
-				        found = true;
-				        if (Cache.hitsCache[i].distance < maxDistance)
-				        {
-					        pos = Cache.hitsCache[i].point;
-					        maxDistance = Cache.hitsCache[i].distance;
-				        }
-			        }
-		        }
-		        if (found)
-		        {
-			        GameRoom.currentRoom.debugForceExitRoom();
-			        PlayerGlobal.instance.SetPosition(pos, false, false);
-		        }
+                bool found = false;
+                float maxDistance = 999999f;
+                for (int i = 0; i < c; i++)
+                {
+                    if (Cache.hitsCache[i].collider != null && GameRoom.currentRoom.PointInsideRoom(Cache.hitsCache[i].point))
+                    {
+                        found = true;
+                        if (Cache.hitsCache[i].distance < maxDistance)
+                        {
+                            pos = Cache.hitsCache[i].point;
+                            maxDistance = Cache.hitsCache[i].distance;
+                        }
+                    }
+                }
+                if (found)
+                {
+                    GameRoom.currentRoom.debugForceExitRoom();
+                    PlayerGlobal.instance.SetPosition(pos, false, false);
+                }
             }
         }
 

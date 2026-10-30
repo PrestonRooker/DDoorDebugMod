@@ -119,11 +119,11 @@ namespace DDoorDebug.GUIMenus
             leftoverCat.OnGUI(new Vector2());
             var bigSize = cBox.CalcSize();
             var leftoverSize = leftoverCat.CalcSize();
-            var empty = new GUIBox.OptionCategory(options: new GUIBox.BaseOption[] { new GUIBox.EmptyOption((bigSize.x - leftoverSize.x) / 2 / Screen.width, 0)}, gapBetweenThings:0);
-            var bottomCat = new GUIBox.HorizontalOptionCategory(subCategories: new GUIBox.OptionCategory[] {empty, leftoverCat}, gapBetweenThings:0);
-            
+            var empty = new GUIBox.OptionCategory(options: new GUIBox.BaseOption[] { new GUIBox.EmptyOption((bigSize.x - leftoverSize.x) / 2 / Screen.width, 0) }, gapBetweenThings: 0);
+            var bottomCat = new GUIBox.HorizontalOptionCategory(subCategories: new GUIBox.OptionCategory[] { empty, leftoverCat }, gapBetweenThings: 0);
+
             bindMenu = new GUIBox.GUIBox(new Vector2(0.02f, 0.02f), new GUIBox.OptionCategory(subCategories: new GUIBox.OptionCategory[] { cBox, bottomCat }));
-            
+
             featureBoxes = tmpFeatureBoxes.ToArray();
 
             for (var i = 0; i < featureBoxes.Length; i++)
@@ -236,14 +236,14 @@ namespace DDoorDebug.GUIMenus
         {
             name = bindName;
 
-            actionButton = new GUIBox.ButtonOption(name, 2.5f, overrideWidth:0.12f);
+            actionButton = new GUIBox.ButtonOption(name, 2.5f, overrideWidth: 0.125f);
             bindButton = new GUIBox.ButtonOption(currentBind, 2.5f, overrideWidth: 0.07f);
-            shiftMod = new GUIBox.ToggleOption("s", modifiers.Contains("s"), true, 2.5f, overrideButtonWidth: 0.03f);
-            ctrlMod = new GUIBox.ToggleOption("c", modifiers.Contains("c"), true, 2.5f, overrideButtonWidth: 0.03f);
-            altMod = new GUIBox.ToggleOption("a", modifiers.Contains("a"), true, 2.5f, overrideButtonWidth: 0.03f);
-            extraButton = new GUIBox.ToggleOption("Extra", extraModifier, true, 2.5f, overrideButtonWidth: 0.04f);
+            shiftMod = new GUIBox.ToggleOption("s", modifiers.Contains("s"), true, 2.5f, overrideButtonWidth: 0.025f);
+            ctrlMod = new GUIBox.ToggleOption("c", modifiers.Contains("c"), true, 2.5f, overrideButtonWidth: 0.025f);
+            altMod = new GUIBox.ToggleOption("a", modifiers.Contains("a"), true, 2.5f, overrideButtonWidth: 0.025f);
+            extraButton = new GUIBox.ToggleOption("Extra", extraModifier, true, 2.5f, overrideButtonWidth: 0.03f);
 
-            box = new GUIBox.HorizontalOptionCategory(options: new GUIBox.BaseOption[] { actionButton, bindButton, shiftMod, ctrlMod, altMod, extraButton }, gapBetweenThings:0.003f);
+            box = new GUIBox.HorizontalOptionCategory(options: new GUIBox.BaseOption[] { actionButton, bindButton, shiftMod, ctrlMod, altMod, extraButton }, gapBetweenThings: 0.003f);
         }
 
         public void OnGUI(Bind b)
